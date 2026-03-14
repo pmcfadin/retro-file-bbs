@@ -1,0 +1,15 @@
+services:
+  sbbs:
+    image: bbsio/synchronet:3.19c
+    container_name: cpmbbs
+    environment:
+      - TZ=America/Los_Angeles
+    ports:
+      - "2323:23"      # telnet (non-privileged host port)
+      - "8080:80"      # web interface
+      - "2121:21"      # FTP (optional)
+    volumes:
+      - ./sbbs:/sbbs-data              # Synchronet config/data (pre-seeded)
+      - ./cpm:/sbbs/xfer/cpm:ro        # CP/M software archive (read-only)
+      - ./indexer:/indexer:ro           # indexer scripts (read-only)
+    restart: unless-stopped

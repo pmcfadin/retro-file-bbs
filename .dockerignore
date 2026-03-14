@@ -1,0 +1,10 @@
+.git
+.claude
+.specify
+.env
+*.md
+__pycache__
+*.pyc
+.DS_Store
+cpm/
+sbbs/

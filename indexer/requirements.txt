@@ -1,0 +1,2 @@
+# No external dependencies — uses Python stdlib only
+# (zipfile, sqlite3, struct, configparser, os, re, textwrap)
