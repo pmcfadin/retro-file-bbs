@@ -20,8 +20,5 @@ Thumbs.db
 # Test artifacts
 .tmp/
 
-# CP/M software archive (bind-mounted, not in git)
-cpm/
-
 # External references
 subprojects/

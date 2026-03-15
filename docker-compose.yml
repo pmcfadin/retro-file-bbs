@@ -12,5 +12,20 @@ services:
       - TZ=America/Los_Angeles
     restart: unless-stopped
 
+  # Interactive CP/M terminal — connects to the BBS via Kermit
+  # Usage: docker compose run --rm cpm
+  cpm:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    entrypoint: ["python3", "-m", "emulation.interactive", "--host", "cpmdepot", "--port", "2323"]
+    working_dir: /app
+    depends_on:
+      - cpmdepot
+    stdin_open: true
+    tty: true
+    profiles:
+      - interactive
+
 volumes:
   index_data:
