@@ -15,8 +15,10 @@ import re
 import signal
 import sqlite3
 import sys
+import uuid
 
 import telnetlib3
+import uvicorn
 
 from server.browser import (
     CATEGORY_INFO,
@@ -26,6 +28,8 @@ from server.browser import (
     get_total_stats,
 )
 from server.search import search_files
+from server.sessions import register_session, deregister_session, update_session_state
+from server import api as admin_api
 from server import tui
 from server.tui import (
     BOLD,
@@ -83,12 +87,14 @@ class Session:
         writer: telnetlib3.TelnetWriter,
         db_path: str,
         cpm_root: str,
+        session_id: str = "",
     ) -> None:
         self.reader = reader
         self.writer = Utf8Writer(writer)
         self._raw_writer = writer  # keep for download module (needs raw transport)
         self.db_path = db_path
         self.cpm_root = cpm_root
+        self.session_id = session_id
 
         # State machine
         self.state = "WELCOME"
@@ -123,9 +129,14 @@ class Session:
     # Database helpers
     # ------------------------------------------------------------------
 
+    _wal_initialized = False
+
     def _open_db(self) -> sqlite3.Connection:
         db = sqlite3.connect(self.db_path)
         db.row_factory = sqlite3.Row
+        if not Session._wal_initialized:
+            db.execute("PRAGMA journal_mode=WAL")
+            Session._wal_initialized = True
         return db
 
     # ------------------------------------------------------------------
@@ -229,7 +240,7 @@ class Session:
         with self._open_db() as db:
             self._categories = get_categories(db)
 
-        tui.draw_header(self.writer, "CP/M Software Depot — Main Menu")
+        tui.draw_header(self.writer, "CP/M Software Depot -- Main Menu")
         tui.draw_blank_line(self.writer)
 
         # Column header
@@ -526,7 +537,7 @@ class Session:
         tui.draw_blank_line(self.writer)
         tui.draw_content_line(
             self.writer,
-            "     " + col(BRIGHT_YELLOW, "[Z]") + col(WHITE, " ZMODEM  ") + col(CYAN, "(recommended — use with SyncTERM)")
+            "     " + col(BRIGHT_YELLOW, "[Z]") + col(WHITE, " ZMODEM  ") + col(CYAN, "(recommended - use with SyncTERM)")
         )
         tui.draw_content_line(
             self.writer,
@@ -872,6 +883,8 @@ class Session:
             if next_state is None:
                 next_state = "QUIT"
             self.state = next_state
+            if self.session_id:
+                update_session_state(self.session_id, self.state)
 
         # Goodbye
         tui.clear_screen(self.writer)
@@ -906,19 +919,23 @@ async def shell(
 ) -> None:
     """Called by telnetlib3 for each incoming connection."""
     peer = writer.get_extra_info("peername", default=("?", 0))
-    log.info("Connection from %s:%s", peer[0], peer[1])
+    peer_ip, peer_port = peer[0], peer[1]
+    session_id = str(uuid.uuid4())[:8]
+    log.info("Connection from %s:%s (session %s)", peer_ip, peer_port, session_id)
 
-    session = Session(reader, writer, db_path, cpm_root)
+    register_session(session_id, peer_ip, peer_port)
+    session = Session(reader, writer, db_path, cpm_root, session_id=session_id)
     try:
         await session.run()
     except Exception as exc:
         log.exception("Unhandled exception in session: %s", exc)
     finally:
+        deregister_session(session_id)
         try:
             writer.close()
         except Exception:
             pass
-        log.info("Connection closed: %s:%s", peer[0], peer[1])
+        log.info("Connection closed: %s:%s (session %s)", peer_ip, peer_port, session_id)
 
 
 # ---------------------------------------------------------------------------
@@ -949,17 +966,49 @@ def parse_args() -> argparse.Namespace:
         metavar="PORT",
         help="Telnet listen port (default: 2323)",
     )
+    parser.add_argument(
+        "--web-port",
+        type=int,
+        default=8080,
+        metavar="PORT",
+        help="Admin web UI port (default: 8080)",
+    )
     return parser.parse_args()
 
 
-async def main_async(db_path: str, cpm_root: str, port: int) -> None:
-    """Async main: create server, run until signal."""
+async def main_async(db_path: str, cpm_root: str, port: int, web_port: int) -> None:
+    """Async main: create telnet + web servers, run until signal."""
     loop = asyncio.get_event_loop()
 
+    # --- Configure FastAPI ---
+    admin_api.DB_PATH = db_path
+    admin_api.CPM_ROOT = cpm_root
+
+    # Install log handler for WebSocket broadcast
+    ws_handler = admin_api.WebSocketLogHandler()
+    ws_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+    logging.getLogger().addHandler(ws_handler)
+
+    # Mount static files (React SPA)
+    static_dir = os.path.join(os.path.dirname(__file__), "..", "admin-ui", "dist")
+    admin_api.mount_static(os.path.abspath(static_dir))
+
+    # --- Start FastAPI via uvicorn ---
+    uvicorn_config = uvicorn.Config(
+        admin_api.app,
+        host="0.0.0.0",
+        port=web_port,
+        log_level="info",
+    )
+    uvicorn_server = uvicorn.Server(uvicorn_config)
+    web_task = asyncio.create_task(uvicorn_server.serve())
+    log.info("Admin web UI starting on port %d", web_port)
+
+    # --- Start telnet server ---
     def make_shell(reader: telnetlib3.TelnetReader, writer: telnetlib3.TelnetWriter) -> "asyncio.Task":
         return asyncio.ensure_future(shell(reader, writer, db_path, cpm_root))
 
-    server = await telnetlib3.create_server(
+    telnet_server = await telnetlib3.create_server(
         host="",
         port=port,
         shell=make_shell,
@@ -967,7 +1016,7 @@ async def main_async(db_path: str, cpm_root: str, port: int) -> None:
         connect_maxwait=5.0,
     )
 
-    log.info("CP/M Software Depot listening on port %d", port)
+    log.info("CP/M Software Depot telnet listening on port %d", port)
 
     stop_event = asyncio.Event()
 
@@ -980,10 +1029,12 @@ async def main_async(db_path: str, cpm_root: str, port: int) -> None:
 
     await stop_event.wait()
 
-    log.info("Shutting down server...")
-    server.close()
-    await server.wait_closed()
-    log.info("Server stopped.")
+    log.info("Shutting down servers...")
+    uvicorn_server.should_exit = True
+    telnet_server.close()
+    await telnet_server.wait_closed()
+    await web_task
+    log.info("All servers stopped.")
 
 
 def main() -> None:
@@ -993,7 +1044,7 @@ def main() -> None:
         log.warning("Database not found at %s — server will start anyway.", args.db)
 
     try:
-        asyncio.run(main_async(args.db, args.cpm_root, args.port))
+        asyncio.run(main_async(args.db, args.cpm_root, args.port, args.web_port))
     except KeyboardInterrupt:
         log.info("Interrupted.")
 

@@ -33,34 +33,41 @@ def get_categories(db: sqlite3.Connection) -> list[tuple[str, int, str]]:
 
 
 def get_files(
-    db: sqlite3.Connection, area: str, page: int, per_page: int
+    db: sqlite3.Connection, area: str | None, page: int, per_page: int
 ) -> tuple[list[dict], int]:
-    """Return paginated file list for an area and the total count.
+    """Return paginated file list and the total count.
 
+    If area is None, returns files across all areas.
     Returns (files, total) where files is a list of dicts with keys:
-    path, filename, size, mtime, description.
+    path, area, filename, size, mtime, description.
     """
-    total: int = db.execute(
-        "SELECT COUNT(*) FROM files WHERE area = ?", (area,)
-    ).fetchone()[0]
-
-    offset = (page - 1) * per_page
-    rows = db.execute(
-        """SELECT path, filename, size, mtime, description
-           FROM files
-           WHERE area = ?
-           ORDER BY filename
-           LIMIT ? OFFSET ?""",
-        (area, per_page, offset),
-    ).fetchall()
+    if area is not None:
+        total: int = db.execute(
+            "SELECT COUNT(*) FROM files WHERE area = ?", (area,)
+        ).fetchone()[0]
+        offset = (page - 1) * per_page
+        rows = db.execute(
+            """SELECT path, area, filename, size, mtime, description
+               FROM files WHERE area = ? ORDER BY filename LIMIT ? OFFSET ?""",
+            (area, per_page, offset),
+        ).fetchall()
+    else:
+        total = db.execute("SELECT COUNT(*) FROM files").fetchone()[0]
+        offset = (page - 1) * per_page
+        rows = db.execute(
+            """SELECT path, area, filename, size, mtime, description
+               FROM files ORDER BY filename LIMIT ? OFFSET ?""",
+            (per_page, offset),
+        ).fetchall()
 
     files: list[dict] = [
         {
             "path": row[0],
-            "filename": row[1],
-            "size": row[2],
-            "mtime": row[3],
-            "description": row[4],
+            "area": row[1],
+            "filename": row[2],
+            "size": row[3],
+            "mtime": row[4],
+            "description": row[5],
         }
         for row in rows
     ]

@@ -17,10 +17,6 @@ else
     echo "Warning: No CP/M files at $CPM_ROOT"
 fi
 
-# Start HTTP mirror in background
-echo "Starting HTTP mirror on :8080..."
-python3 -m http.server 8080 --directory "$CPM_ROOT" &
-
-# Start telnet server
-echo "Starting telnet server on :2323..."
-exec python3 -m server.main --db "$DB_PATH" --cpm-root "$CPM_ROOT" --port 2323
+# Start telnet + admin web UI server
+echo "Starting telnet server on :2323 and admin UI on :8080..."
+exec python3 -m server.main --db "$DB_PATH" --cpm-root "$CPM_ROOT" --port 2323 --web-port 8080
