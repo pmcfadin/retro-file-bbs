@@ -1,0 +1,58 @@
+SGTOOL16.LZH:  CP/M ANSI C Library for the Commodore 128.
+
+REQUIRED: Utility to dissolve .LZH files, and HiTech "C"
+          to compile.
+
+From: s.goldsmith2@genie.geis.com
+Date: Mon, 28 Feb 94 10:01:00 BST
+To: 100024.1545@compuserve.com, cbm@cs.arizona.edu, 
+    csbruce@ccnga.uwaterloo.ca, fred@cbmvax.cbm.commodore.com, 
+    thoot@sugar.neosoft.com
+Subject: SGTOOL16.LZH includes source!
+X-Genie-Id: 9767693
+X-Genie-From: S.GOLDSMITH2
+Status: RO
+
+Hi everyone,
+ 
+I'm sending SGTOOL16.LZH UU encoded.  SG C Tools for C128 CP/M is 
+the most powerful ANSI C library you can get for the C= in any 
+mode.  Comes complete with demo showing you how to use famous Z 
+Blaster 4 bit sound, PCX to VDC decode engines, Fred Bowen's 
+640X480 VDC interlace, graphics primitives and other cool high 
+and low level functions.  Just use SUBMIT LIB to build all the 
+files in LIBC128.LZH.  DEMO.C tells you how to compile with 
+Freeware Hi-Tech C 3.09.  I decided to release all source code.  
+Two computer jobs and my PC Turbo Vision tools are taking too 
+much time.  I figure it will make some hacker in Germany happy 
+and would like to check out any cool programs developed with it. 
+ 
+SG :)
+ 
+
+
+
+Listing of archive : 'SGTOOL16.LZH'
+
+  Name          Original    Packed  Ratio   Date     Time   Attr Type  CRC
+--------------  --------  -------- ------ -------- -------- ---- ----- ----
+  LIBC128.LZH      28900     27851  96.4% 94-02-27 18:24:52 a--w -lh5- ****
+  DEMO.C           16826      4743  28.2% 94-02-27 17:57:16 a--w -lh5- ****
+  DEMO.RAW         20480     17629  86.1% 94-02-27 17:57:16 a--w -lh5- ****
+  DEMO1.PCX        10031      7752  77.3% 94-02-27 17:57:16 a--w -lh5- ****
+  DEMO2.PCX        23410     17613  75.2% 94-02-27 17:57:16 a--w -lh5- ****
+  SGCTOOLS.DOC      8959      4275  47.7% 94-02-27 17:57:16 a--w -lh5- ****
+--------------  --------  -------- ------
+     6 files      108606     79863  73.5%
+
+
+
+crc32a = 1329470915 for "sgtool16.lzh"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+

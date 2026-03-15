@@ -1,0 +1,26 @@
+SQ-USQ - CP/M utility to create/dissolve SQUEEZED .?Q? files.
+
+REQUIRED:  CP/M System and unarc
+
+Searching Archive: SQ-USQ.ARC
+
+Filename        Length   Method     Size   Ratio    Date      Time    CRC
+--------        ------   ------    ------  -----    ----      ----    ---
+CPM-SQ.COM       15744  Crunched     9805   38%   10-07-89  10:46:30  7891
+CPM-USQ.COM      12288  Crunched     8245   33%   10-07-89  10:46:34  E54E
+FU18.COM          1152  Crunched     1052    9%   10-07-89  10:46:42  9618
+FU18.DOC         29056  Squashed    14959   49%   10-07-89  10:46:46  C12E
+UNSQZ12.COM       3968  Crunched     2967   26%   07-29-87  23:03:46  A56D
+UNSQZ12.DOC       1920  Crunched     1291   33%   07-29-87  21:34:24  3487
+----            ------             ------  -----
+0006             64128              38319   41%
+
+crc32a = 3386763584 for "sq-usq.arc"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+

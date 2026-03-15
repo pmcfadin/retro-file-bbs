@@ -1,0 +1,7 @@
+PMAUTOAE is a CP/M archive utility that will dissolve standard LHARC (.lzh)
+archives.  It also creates its own format archives, which aren't quite
+standard LHARC archives, and thus won't be compatable with CS-DOS's lhx or the
+Unix, Amiga, or MS-DOS lharc.
+
+PMAUTOAE.COM is a self-dissolving archive.  Run it like any other CP/M
+program, and it will dissolve itself into its constituent files.

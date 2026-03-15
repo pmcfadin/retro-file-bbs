@@ -1,0 +1,24 @@
+BYE1670E - C=128 CP/M terminal program
+
+REQUIRED: C=128 CP/M (28MAY87), delbr, unsq (unsqueeze).
+
+Name         Index    Length (128 byte blocks)
+Directory       0         2
+-info.doc       2        17
+b5-driv3.com   19        35
+bye.com        54         4
+bye-equs.1q8   58       123
+-----------------------------
+Total blocks            181
+
+Library bye1670e.lbr has 8 slots, 0 deleted, 4 active, 3 unused
+
+crc32a = 1108279681 for "bye1670e.lbr"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+

@@ -1,0 +1,62 @@
+___________________________________________________________________
+
+                         SG C Tools 1.5
+                    (C) 1993 Steve Goldsmith
+                       All Rights Reserved
+___________________________________________________________________
+
+
+OVERVIEW
+
+SG C Tools ANSI C library unlocks the power of the C128 running
+CP/M!  High level and low level functions are included to access
+the VDC, SID and CIA.  All source code is compatible with the
+Freeware version of Hi Tech C.  A demo is included to show you how
+to use most features.
+
+
+REQUIREMENTS
+
+A C128 or C128D running CP/M 3.0 or a IBM PC running a CP/M
+emulator and DOS to CP/M file transfer software.
+
+At least one 1581, two 1571s, large RAM disk or hard drive to
+compile on a C128.
+
+80 column monitor for VDC specific routines.  640 X 480 interlace
+graphics requires a monitor that can handle this format.
+
+ANSI C programming experience.
+
+
+MODIFICATIONS IN VERSION 1.5
+
+It took me a while to release this version due to work on another
+project.  I'm developing a Paradox 4.x browser for DOS and DOS
+Protected mode, so I haven't had much hacking time for the C128.
+
+Added pixel, line, ellipse and text functions for VDC 640 X 480
+interlace bit map mode.
+
+The 640 X 480 ellipse function leaves gaps with some radiuses.  I
+ported this from a Pascal SWAG packet that was intended for 320 X
+240 X 256 (Mode X) VGA displays.  I may have not been intended for
+resolutions greater than this.  It seems to work fine in 640 X 200
+though.  I have included the source for this, so you can play
+around with it if you want.  Remember, I will give you a free
+registered copy for a fast integer based ellipse function which I
+can include in SG C Tools.
+
+Unregistered versions no longer include library source!
+
+
+HOW TO CONTACT ME
+
+Please report any support questions, problems, suggestions, etc. to
+me via GEnie S.GOLDSMITH2, Internet S.GOLDSMITH2@GENIE.GEIS.COM,
+voice phone (813) 925-1064 or US Mail to:
+
+Steve Goldsmith
+2805 Jamaica Street
+Sarasota, FL 34231
+USA

@@ -1,0 +1,113 @@
+                 HI-TECH C 3.09 (CP/M-80) REVIEW
+                       By Steve Goldsmith
+                            07/19/93
+-------------------------------------------------------------------
+
+Hi there,
+
+     I have just finished up my first release of a ANSI C tool box
+of fast video routines for the C128's VDC.  I used the Freeware HI-
+TECH C compiler package I down loaded from GEnie.  I spent a week
+using this package and I would like to share a few observations
+with you.
+
+I have 13 years (9 of it professional) of programming experience on
+various OS platforms including C64, C128, Apple ][, IBM PC
+(networks), IBM 4300, IBM AS/400, NCR Century 300, Wang VS, Qantel
+minis, etc.  I haven't had the pleasure of running a UNIX system
+though.  I have been using Object Pascal (the C++ of Pascal) the
+past 2 or 3 years and prefer it for MS DOS, Windows 3.x and DPMI
+programming.  I also have experience with 6502, Z80 and x86
+Assembler, BASIC, Report Generator and most other languages they
+make you take at college and use in the business world.  Just a
+little background, so you don't think I'm a Cyber Punk that plays
+video games all day and night.
+
+Once in a while I take a break from the PC and AS/400 world and
+hack on my C128D in CP/M mode.  When I saw that there was a FREE C
+compiler I had to take a look at it even though I haven't used C
+before.  I knew one day I would have to learn C because most jobs
+require it instead of COBOL.  Since I'm an experienced programmer
+I know what I like in a development system no matter what language
+it is.  With that said let's take a closer look at HI-TECH C!
+
+I'm not going to rate HI-TECH C (HTC) on a scale like so many PC
+rags.  I'm just going to tell you what I like and don't like about
+HTC.  I use Turbo Pascal 3.1 (TP3) for CP/M and I think it is still
+one of the best CP/M compilers around.  I will be comparing TP3 to
+HTC since most of the other CP/M compilers I've used are not full
+implementations of the language.
+
+WHAT I LIKE ABOUT HI-TECH C 3.09
+
+1.   It's a complete ANSI C.  Compared to K and R or Small C only
+     compilers.  ANSI C makes non-hardware dependent code more
+     portable across various platforms.
+
+2.   Only one command needed to compile, assemble and link code.
+
+3.   Strong type checking.  A must for us die hard Pascal
+     programmers.  Helps prevent run time errors cause by type
+     mismatching.
+
+4.   Generates small fast code.  Doesn't require fixed size run
+     time library (RTL) like TP3.  Only links code that is used, so
+     there is no dead code linked in your .COM file.  TP3's RTL is
+     8K, so your .COM file will be at least 8K no matter what.
+
+5.   RTL source is provided to modify or learn from.
+
+6.   Gives you the option to generate .OBJect and .ASsembler
+     files without invoking the linker.
+
+7.   It's free!
+
+WHAT I DON'T LIKE ABOUT HI-TECH C 3.09
+
+1.   It's quite slow.  I'm running a C128D with 800K and 360K
+     floppies.  I would recommend using a RAM disk or hard drive
+     for the .COM and work files.  Keep your source on a floppy. 
+     I was able to read two C language books while waiting for
+     compiles!  You could also use a CP/M-80 emulator on a PC for
+     faster compiles.  TP3 blows HTC away in this respect!
+
+2.   No integrated development environment (IDE) like TP3.  You'll
+     have to find a good text editor to maintain your C source
+     files.  I use the TP3 editor since it can execute HTC's
+     compiler and return you to edit your source.  It is also old
+     fashioned to just dump the compiler error messages to the
+     screen instead of putting it on the offending line in the
+     source code.  This sounds kind of picky, but Borland has been
+     doing it for 10 years!
+
+3.   The optimizer locks up when using in-line Assembler with the
+     #asm #endasm directives.  It compiles and runs fine until you
+     use the -O switch.  The optimizer just locks up in the same
+     place without warning!  At the end of the review I'll give you
+     the names of the source files, so you can take a look at this
+     problem.  Mabey I have a bad optimizer?
+
+4.   The manual has some weird codes embedded which have to be
+     removed before printing to a PC printer.  Is this in a word
+     processor format?
+
+As you can see I don't have any major gripes about HTC other than
+the optimizer lock up.  I can recommend HTC for beginners as well
+as advanced users.  If you haven't used C before I would pick up a
+couple of books before trying to write anything of substance.  If
+you want to give HTC a try then download the following from GEnie's
+CP/M RT (m685;3):
+
+FREEware C Compiler for HI-TECH Software!  See Z80V309.LZH,
+Z80DOC.LZH and LIBSRC.LZH in the Software Library.  Demo versions
+of their DOS-based cross compilers are also available!
+
+Source to my C128 fast video module is the CP/M and Flagship RT
+(m625;3):
+
+SGTOOL10.ARC
+
+Steve Goldsmith
+
+S.GOLDSMITH2 on GEnie
+

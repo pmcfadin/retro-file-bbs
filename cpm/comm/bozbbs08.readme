@@ -1,0 +1,28 @@
+bozbbs08.lbr - Neat little board for CP/M.   C128 use requires
+               the BYE510 daemon for C1670 or other C128 set-up.
+
+Name         Index    Length (128 byte blocks)
+Directory       0         9
+adduser.czm   296        65
+aliases.dzc   381         6
+bozbbs.dzc    361        13
+byemods.dzc   374         7
+eduser.czm    226        70
+login.czm       9        74
+login.pzs     387        16
+passwd.czm    160        66
+post.czm       83        77
+-----------------------------
+Total blocks            403
+
+Library bozbbs08.lbr has 36 slots, 0 deleted, 9 active, 26 unused
+
+crc32a = 3046970279 for "bozbbs08.lbr"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+

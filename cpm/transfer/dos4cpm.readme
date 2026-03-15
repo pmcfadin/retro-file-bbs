@@ -1,0 +1,21 @@
+		DOS4CPM - Utilities to handle CP/M files.
+
+
+Using these utils on your DOS box you will be able to work of CP/M
+files.  The following file types can be handled:
+
+.LBR - Make with LU86.  Dissolve with LU86 or DELBR
+
+.?q? - Unsqueeze ALUSQ2 USQ2
+
+.?z? - Uncrunch UCR
+
+?y?  - Make with crlzh20 dissolve with ucrlzh20
+
+ +-------------------------------------------------------------------+
+ |thoot@neosoft.com   2600 Skywalker #1076 Houston 77058 713-286-8717|
+ | PIC of Midtown 714-961-5817 FIDO 1:106\31 thoot@wixer.bga.com     |
+ | tom.hoot@f31.n106.z1.fidonet.org  GEnie Thoot   WB5HIG            |
+ +-------------------------------------------------------------------+
+  
+

@@ -1,0 +1,48 @@
+	Frequently Asked Question - Copying files DOS < = > CP/M
+
+There are two excellent DOS programs to Format CP/M disks and copy files
+to/from these disk(s) and your DOS system.
+
+The first is 22DISK.  I may be found on your local BBS as 22DSKxxx.???
+xxx is the version and ??? the archive type.  I personally use it all
+the time.  And it works great.
+
+There are two things the user should be aware of:
+
+	1. When files are copied from CP/M to DOS the utility
+	   renames all .COM files to .CPM    This is done because
+           the matching utility 22NICE, a CP/M emulator runs CP/M-86
+	   and uses .CMD files.  So if your using regular CP/M just
+           rename the files.
+
+	2. IT WILL NOT work with Hard-Sectored or GCR (Apple or Commodore)
+           disks at all.  Only MFM-Formatted CP/M disks.
+
+	available from -
+	SYDEX
+	Box 5700
+	Eugene OR 97405
+	503-683-6033
+
+The second method is UNIFORM-PC.  I also use it and have found it an
+excellent utility.  Uniform requires the loading of a .SYS to work.
+
+	available from -
+	Micro Solutions
+	132 W Lincoln Hwy
+	DeKalb Il 60115
+	815-756-3411
+
+I know there are several other programs to do these functions, but I
+do not know their names.
+
+I hope this FAQ is useful - corrections/additions are welcomed.
+
+-- 
+ +-------------------------------------------------------------------+
+ |thoot@neosoft.com   2600 Skywalker #1076 Houston 77058 713-286-8717|
+ | PIC of Midtown 714-961-5817 FIDO 1:106\31 thoot@wixer.bga.com     |
+ | tom.hoot@f31.n106.z1.fidonet.org  GEnie Thoot   WB5HIG            |
+ +-------------------------------------------------------------------+
+  
+

@@ -1,0 +1,32 @@
+
+801PRT10 - MPS801 file printer version 1.0
+by M. Kimmel
+------------------------------------------
+
+
+801PRT10 is a file printer program designed with the Commodore MPS-801 printer
+in mind.  It has always annoyed me that the MPS-801's buffer must be "flushed
+out" with a carriage return.  All the file listers I've used tend to drop the
+last line of a file when sending it to the printer.  This program sends two
+extra carriage returns to the printer after it print the file, to make sure
+the last lines are printed.  It also filters out linefeeds.
+
+REQUIRED: CP/M, C=128, MPS-801, de-lbr - to delibrary the files
+
+-Matt Kimmel
+
+I can be reached on the ARPANet as:
+
+MKimmel%UMass.BITNET@wiscvm.ARPA
+
+and on BITNet as:
+
+MKimmel@UMass.BITNET
+immel
+
+I can be reached on the ARPANet as:
+
+MKimmel%UMass.BITNET@wiscvm.ARPA
+
+crc32a = 2923330355 for "801prt11.lbr"
+

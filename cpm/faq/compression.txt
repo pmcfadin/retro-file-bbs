@@ -1,0 +1,44 @@
+COMPRESSION techniques under CP/M have not evolved quite as fast as they
+have for other platforms.
+
+The older methods involved individual file compression and then LIBRARY
+to contain the group of files.
+
+EXTENSION       COMMENTS
+---------       --------
+LBR             Library - a method of containning files, no compression.
+                          Create with NULU or LAR (various revisions)
+                          Dissolve with NULU or DELBR.
+?Q?             Squeeze - individual file compression technique.
+                          Create with SQUEEZE, dissolve with UNSQUEEZE.
+                          The utilities names may vary, but the files
+                          description should help.
+?Z?             Crunch -  Individual file compression technique.
+                          Create with CR, CRUNCH, various versions.
+                          Dissolve with UNCR, UNCRUNCH, various versions.
+?Y?             LZH-CRUNCH - Individual file compression technique.
+                          Create with CRLZH20 and dissolve with UCRLZH20.
+
+Newer Methods are true archivers.  These utilities can both compress and
+contain a group of files.
+
+ARC           Archive - A true archiver.  Files can be handled across
+                        different platforms.
+ARK           Archive - default name for ARC under CP/M.  
+ZIP           Zip     - A true archive.  No utility to create under CP/M,
+                        the older versions of ZIP files can be dissolved
+                        with UNZIP (various versions)
+LZH           LZH     - A true archiver.  Create with LHARC and dissolve
+                        with LHARD.  The CP/M version cannot handle LH5
+                        compression techniques.
+ARJ           Arj     - A true archive.  No utility to create under CP/M,
+                        the older versions of ARJ files can be dissolved
+                        with UNARJ.
+PMA           PMA     - A true archiver.  Available for CP/M only.
+                        PMAUTOAE.COM is the self dissolving file to
+                        look for.  This utility creates the best 
+                        compression available under CP/M.  It also
+                        has the ability to make self-dissolving-files,
+                        that are archives.  NOTE: has the ability to
+                        dissolve LH5 LZH archives created by other
+                        platforms.

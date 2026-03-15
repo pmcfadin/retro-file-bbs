@@ -1,0 +1,53 @@
+Used to install BYE terminal program for C=128 CP/M system.
+
+REQUIRED: C=128 CP/M (28 MAY 87), USQ (UNSQUEEZE) and the files
+listed below.
+
+; B5C8-2.INS - BYE5 insert for Commodore C128, external modem - 8/11/86
+;
+;          Note, this is an insert, not an overlay.
+;          It will only work with BYE510 or higher.
+;          When going through the options for
+;          BYE5, set the clock speed:
+;
+;                 MHZ  EQU  1
+;
+;          The modem routines built into the Com-
+;          modore IOS use "bit-banging" interrupt
+;          control and this value should be used.
+;          (All this does is control the number of
+;          loops used for timing purposes.)
+;
+;-----------------------------------------------------------------------
+; TO INSTALL:
+;
+; You will need the following files from BYE5nn.LBR to properly imple-
+; ment BYE5 on your C128 which uses CP/M 3.0:
+;
+;     BYE5nn.AQM   - The BYE5 source file for CP/M 2 or CP/M 3
+;     B5-CPM3.AQM  - CP/M Plus program renamed to BYE.COM during install
+;     B5-DRIV3.AQM - BYE5 RSX driver program called internally by BYE
+;               to initialize the CP/M Plus RSX
+;
+; You will need the following file from B5-CLOCK.LBR if you want to use
+; the clock support provided in BYE5:
+;
+;     B5C-CPM3.IQS - CP/M Plus clock insert
+;
+; Configuration information for BYE5 is available in BYE5.DQC (from
+; BYE5nn.LBR).     Additional CP/M Plus-specific information and generation
+; instructions are in B5-CPM3.DQC (also from BYE5nn.LBR).
+;
+;                              - notes by George Peace
+;
+; =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =   =
+
+crc32a = 1481272250 for "b5c8-2.iqs"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+

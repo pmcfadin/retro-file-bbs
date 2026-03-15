@@ -1,0 +1,103 @@
+                         SG C Tools 1.4
+                    (C) 1993 Steve Goldsmith
+                       All Rights Reserved
+-------------------------------------------------------------------
+ 
+ 
+OVERVIEW
+ 
+SG C Tools ANSI C library unlocks the power of the C128 running
+CP/M!  High level and low level functions are included to access
+the VDC, SID and CIA.  All source code is compatible with the
+Freeware version of Hi Tech C.  A demo is included to show you how
+to use most features.
+ 
+ 
+REQUIREMENTS
+ 
+A C128 or C128D running CP/M 3.0 or a IBM PC running a CP/M
+emulator and DOS to CP/M file transfer software.
+ 
+At least one 1581, two 1571s, large RAM disk or hard drive to
+compile on a C128.
+ 
+80 column monitor for VDC specific routines.  640 X 480 interlace
+graphics requires a monitor that can handle this format.
+ 
+ANSI C programming experience.
+ 
+ 
+FEATURES
+ 
+CIA
+ 
+Get/set TOD clocks, convert TOD BCD to HH:MM:SS AM, set interrupt
+controllers, get/set 1.02 MHz timers, convert Hz to timer latch
+value, read joy sticks and low level keyboard scan.  Demo shows you
+how to read 2 joy sticks, 4 paddles, 2 mice and the extended 128
+keyboard.
+ 
+VDC
+ 
+Fast I/O, buffered I/O, fills, copies, scrolling, text output,
+windows, 80 X 50 interlace text, 64K mode, etc.
+ 
+Fast graphics primitives for pixel plotting, lines, text output,
+etc.  Demo shows you how to do windows and graphics.
+ 
+VIEW PCX IMAGES
+ 
+Use industry standard .PCX images in your C programs!  Demo shows
+you how to view 640 X 200 and 640 X 480 images.
+ 
+SID
+ 
+Read pots, read 1351 compatible mouse, clear SID, set master
+volume, set envelopes, set attack/release cycles, set pulse wave,
+etc.  Demo includes sound effects!
+ 
+PLAY FOUR BIT DIGITIZED SOUNDS
+ 
+Now you can play .RAW or Zounds type sound files in your C
+programs!  Demo shows you how to play a .RAW file.
+ 
+ 
+WHERE TO GET IT
+ 
+You can down load the SGTOOL14.ARC from GEnie, Compuserve or mail
+me a self addressed pre-paid disk mailer with a disk.  If you want
+a registered copy which includes full library source see below.
+ 
+ 
+REGISTRATION INFORMATION
+ 
+The non-commercial registration fee for SG C Tools 1.4 is $10.00
+plus $3.00 for shipping in US funds.
+ 
+Send a check or money order for the appropriate amount to:
+ 
+Steve Goldsmith
+2805 Jamaica Street
+Sarasota, FL 34231
+ 
+Please indicate what product you are ordering and if you have a
+requirement for 3.5" media.  I normally ship 5.25" Commodore GCR
+format diskettes, but will furnish 3.5" media upon request.
+Customers outside of the United States and Canada should include
+$5.00 for airmail.
+ 
+If you are a registered user of this product and desire an update,
+please contact me for upgrade prices.
+ 
+ 
+HOW TO CONTACT ME
+ 
+Please report any support questions, problems, suggestions, etc. to
+me via GEnie S.GOLDSMITH2, Internet S.GOLDSMITH2@GENIE.GEIS.COM,
+voice phone (813) 925-1064 or US Mail to:
+ 
+Steve Goldsmith
+2805 Jamaica Street
+Sarasota, FL 34231
+USA
+

@@ -1,0 +1,27 @@
+
+Searching Archive: NSWP207.ARC
+
+CP/M utility to copy file(s), rename file(s), squeeze, unsqueeze,
+or view text files with.
+
+REQUIRED: A CP/M system and unarc.obj (rename to unarc.com) to 
+dissolve the .arc
+
+Filename        Length   Method     Size   Ratio    Date      Time    CRC
+--------        ------   ------    ------  -----    ----      ----    ---
+NSWEEP.COM       11776  Crunched    10334   13%   03-26-93  22:57:16  3783
+NSWEEP.HLP        9474  Crunched     4856   49%   03-26-93  22:57:16  6CE8
+S.DOC            29056  Crunched    13626   54%   03-26-93  22:57:16  15DA
+----            ------             ------  -----
+0003             50306              28816   43%
+
+crc32a =  830064508 for "nswp207.arc"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+
+

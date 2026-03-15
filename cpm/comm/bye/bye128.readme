@@ -1,0 +1,26 @@
+BYE128 - C=128 CP/M terminal program
+
+
+Name         Index    Length (128 byte blocks)
+Directory       0         2
+b5-cpm3.azm     2        20
+b5-driv3.azm   22        16
+bye128.dzc     38        14
+bye510c.azm    52       315
+bye-on.1z8    367        23
+-----------------------------
+Total blocks            390
+
+Library bye128.lbr has 8 slots, 0 deleted, 5 active, 2 unused
+
+REQUIRED: C=128 CP/M, delbr, uncr, and various assembly programs.
+
+crc32a = 3141944828 for "bye128.lbr"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+  
+

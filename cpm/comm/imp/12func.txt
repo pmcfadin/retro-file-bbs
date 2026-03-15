@@ -1,0 +1,52 @@
+I2FUNC information for use with IMP			07/17/85
+
+	This program has been adapted from one originally written by
+Sigi Kluger for the MDM7 series.  It is used to change any of the 10
+function key assignments for the IMP modem program.
+
+	Function keys can do very nice things, like automatically type a
+string of characters you often use, such as DIR *.* $U0AD, or XMODEM S,
+or KMD R , the name and password you use for varius RCPM systems you may
+use frequently, all sorts of similar things that will immediately come
+to mind.
+
+
+USING THE FUNCTION KEYS
+-----------------------
+	You transmit the contents of a function key by typing first the
+INTERCEPT CHARACTER, then a digit 0..9.  The INTERCEPT CHARACTER is an
+unique character which tells IMP that a function key command follows.
+It currently set to ESC.  It could as easily be CTL-A, or 'circumflex'
+or 'right brace', for example.	In the distribution version of IMP, the
+following keys are defined (substitute your own lead-in character for
+the ESC if not the same.)
+
+ESC 1	DIR <cr>
+ESC 2	DIR *.* $U0AD <cr>
+ESC 3	KMD R
+ESC 4	KMD S
+ESC 5	XMODEM R
+ESC 6	XMODEM S
+ESC 7	BYE <cr>
+ESC 8	CBBS <cr>
+ESC 9	(vacant)
+ESC 0	Nice chatting, see you again soon... <cr>
+
+(Function keys 3-6 have no trailing CR).
+
+
+ROOM AVAILABLE
+--------------
+	A total of 256 bytes are reserved for the function key defini-
+tion.  Each definition takes up the number of bytes in the string, PLUS
+2 more.  Note that you must not enclose any control characters in the
+definitions (CR is allowed and is optional).
+
+ALTERING THE FUNCTION KEYS
+--------------------------
+	In order to not increase the size of IMP considerably, I2FUNC
+may be used.  It is virtually self-explanatory and has its own built-in
+short help guide.  I2NM-1.ASM may also be used to alter the function
+key assignment with your local editor, if you wish.
+
+					- Irv Hoff

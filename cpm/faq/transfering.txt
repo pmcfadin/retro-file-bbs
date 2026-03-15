@@ -1,0 +1,30 @@
+How to copy files from Commodore disks to CP/M disks.
+
+First you must have the destination disk already formatted in Commodore
+CP/M.  This can be a 1541, 1571 or 1581 disk.
+
+Software methods:
+
+1.  Crosslink - limited by file size.
+
+2.  Big Blue Reader - excellent Commercial utility.  REU support.  NOT
+    limited by file size.  You need either a 1571 or 1581 to take full
+    advantage of BBR's ability to transfer to/from DOS disks. MENUs make
+    it an easy system to use.
+
+3.  Format Executive - Commercial package for C=128 CP/M.  You will need
+    a 1571 or 1581 to take advantage of the ability to transfer to/from
+    DOS disks.  Command line structure - no menus!
+
+Modem methods:
+
+1.  Null modem to connect systems.
+
+2.  Commonsense Terminal has the ability to up/download from a Commodore
+    CP/M disk.
+
+3.  CP/M term - runs in native Commodore mode, but uses only CP/M disks
+    for the source/destination media.  Has only Xmodem.
+
+4.  Various CP/M terminals are available for the C=128.  They sure
+    don't measure up to say DeskTerm.

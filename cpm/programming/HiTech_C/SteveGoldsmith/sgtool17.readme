@@ -1,0 +1,51 @@
+SGTOOL17.LZH:  CP/M ANSI C Library for the Commodore 128.
+
+REQUIRED: Utility to dissolve .LZH files, and HiTech "C"
+          to compile and SGTOOL16.LZH
+
+From s.goldsmith2@genie.geis.com Wed Jun  1 02:42:46 1994
+Date: Wed,  1 Jun 94 07:24:00 UTC
+To: 100024.1545@compuserve.com, cbm@cs.arizona.edu, 
+    csbruce@ccnga.uwaterloo.ca, fred@cbmvax.cbm.commodore.com, 
+    thoot@sugar.neosoft.com
+Subject: SGTOOL17.LZH
+X-Genie-Id: 8596116
+X-Genie-From: S.GOLDSMITH2
+Status: RO
+
+                 C128 CP/M C Programmer's tool box release
+---------------------------------------------------------------
+ 
+SG C Tools 1.7 finally fixes the error in the VDC ellipse 
+routines! Version 1.7 is only an update and requires version 1.6 
+(SGTOOL16.ARC) to compile.  Enjoy, 
+ 
+SG :)
+ 
+
+
+  
+
+
+
+Listing of archive : 'SGTOOL17.LZH'
+
+  Name          Original    Packed  Ratio   Date     Time   Attr Type  CRC
+--------------  --------  -------- ------ -------- -------- ---- ----- ----
+  SGCTOOLS.DOC      9194      4393  47.8% 94-06-01  3:03:12 a--w -lh5- ****
+  DEMO.C           16896      4751  28.1% 94-06-01  3:04:40 a--w -lh5- ****
+  VDCELLIP.C        1536       542  35.2% 94-06-01  3:04:40 a--w -lh5- ****
+  VDCELLPI.C        1536       559  36.3% 94-06-01  3:04:42 a--w -lh5- ****
+--------------  --------  -------- ------
+     4 files       29162     10245  35.1%
+
+
+
+crc32a = 3272660972 for "sgtool17.lzh"
+
+ +-------------------------------------------------------------------+
+ |      thoot@neosoft.com   2600 Skywalker #1076 Houston 77058       |
+ |   PIC of Midtown 713-961-5817 FIDO 1:106\31 voice 713-286-8717    |
+ |                        GEnie THOOT  WB5HIG                        |
+ +-------------------------------------------------------------------+
+
