@@ -68,10 +68,16 @@ INPMDM_ORIGINAL = bytes([
 # Replacement routines
 # ---------------------------------------------------------------------------
 
-# New outmdm: LD A,E; OUT (AUX_DATA),A; RET; NOP-pad to 12 bytes
+# New outmdm: CR→LF translation before OUT.
+# z80pack auxd_out drops CR (0x0D); translate to LF (0x0A) which passes through.
+# The bridge adds LF→CRLF on the BBS side if needed.
 _OUTMDM_CODE = bytes([
-    0x7B,                           # LD A,E
-    0xD3, AUX_DATA_PORT,            # OUT (5),A
+    0x7B,                           # LD A,E        — character in E
+    0xFE, 0x0D,                     # CP 0DH        — is it CR?
+    0x20, 0x02,                     # JR NZ,.send   — no, send as-is
+    0x3E, 0x0A,                     # LD A,0AH      — yes, translate to LF
+    # .send:
+    0xD3, AUX_DATA_PORT,            # OUT (5),A     — write to AUX port
     0xC9,                           # RET
 ])
 OUTMDM_PATCH = _OUTMDM_CODE.ljust(len(OUTMDM_ORIGINAL), b'\x00')
