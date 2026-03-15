@@ -59,14 +59,13 @@ log = logging.getLogger(__name__)
 PER_PAGE = 20
 CATEGORY_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-# ASCII / block-letter banner (fits in 78 chars, bright cyan)
+# ASCII banner (7-bit safe for CP/M terminals)
 BANNER_LINES = [
-    r"     ██████╗██████╗ ██╗███╗   ███╗",
-    r"    ██╔════╝██╔══██╗██║████╗ ████║",
-    r"    ██║     ██████╔╝██║██╔████╔██║",
-    r"    ██║     ██╔═══╝ ██║██║╚██╔╝██║",
-    r"    ╚██████╗██║     ██║██║ ╚═╝ ██║",
-    r"     ╚═════╝╚═╝     ╚═╝╚═╝     ╚═╝",
+    r"      ____  ____   __  __       __  __",
+    r"     / ___||  _ \ |  \/  |     |  \/  |",
+    r"    | |    | |_) || |\/| |     | |\/| |",
+    r"    | |___ |  __/ | |  | |  _  | |  | |",
+    r"     \____||_|    |_|  |_| (_) |_|  |_|",
 ]
 
 
@@ -199,14 +198,14 @@ class Session:
         tui.draw_content_line(self.writer, col(YELLOW, depot_line))
         tui.draw_blank_line(self.writer)
 
-        tagline = "                  ── Serving the CP/M Community ──"
+        tagline = "                  -- Serving the CP/M Community --"
         tui.draw_content_line(self.writer, col(WHITE, tagline))
         tui.draw_blank_line(self.writer)
 
         stats = (
             f"    {col(BRIGHT_CYAN, str(total_cats))} Categories"
-            f"  ·  {col(BRIGHT_CYAN, str(total_files))} Files"
-            f"  ·  {col(WHITE, 'Z/X/K/Raw Downloads')}"
+            f"  -  {col(BRIGHT_CYAN, str(total_files))} Files"
+            f"  -  {col(WHITE, 'Z/X/K/Raw Downloads')}"
         )
         tui.draw_content_line(self.writer, stats)
 
@@ -243,8 +242,8 @@ class Session:
         tui.draw_content_line(self.writer, header)
 
         sep = (
-            "  ─── ────────────────────── "
-            "──────── ─────────────────────────────────────────"
+            "  --- ---------------------- "
+            "-------- -----------------------------------------"
         )
         tui.draw_content_line(self.writer, col(CYAN, sep))
 
@@ -305,7 +304,7 @@ class Session:
         )
         tui.draw_content_line(self.writer, header)
 
-        sep = "  ── ────────────────── ─────── ─────────────────────────────────────────"
+        sep = "  -- ------------------ ------- -----------------------------------------"
         tui.draw_content_line(self.writer, col(CYAN, sep))
 
         for i, f in enumerate(files, start=1):
@@ -461,7 +460,7 @@ class Session:
         )
         tui.draw_content_line(self.writer, header)
 
-        sep = "  ── ────────────────── ────── ──────────── ─────────────────────────────"
+        sep = "  -- ------------------ ------ ------------ -----------------------------"
         tui.draw_content_line(self.writer, col(CYAN, sep))
 
         for i, f in enumerate(self._search_results, start=1):

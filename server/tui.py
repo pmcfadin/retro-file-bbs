@@ -25,15 +25,15 @@ RED = f"{ESC}[31m"
 RESET = f"{ESC}[0m"
 BOLD = f"{ESC}[1m"
 
-# Box-drawing characters
-TL = "┌"   # top-left
-TR = "┐"   # top-right
-BL = "└"   # bottom-left
-BR = "┘"   # bottom-right
-HORIZ = "─"
-VERT = "│"
-LMID = "├"
-RMID = "┤"
+# Box-drawing characters (ASCII for CP/M terminal compatibility)
+TL = "+"
+TR = "+"
+BL = "+"
+BR = "+"
+HORIZ = "-"
+VERT = "|"
+LMID = "+"
+RMID = "+"
 
 BOX_WIDTH = 78  # inner content width inside an 80-col terminal
 
