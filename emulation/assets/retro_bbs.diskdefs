@@ -1,0 +1,13 @@
+# Local copy of the z80pack CP/M 2.2 floppy geometry used by retro_bbs.
+# This matches cpmtools' built-in "ibm-3740" entry and z80pack's CP/M 2.2 BIOS.
+
+diskdef retro-bbs-z80pack-cpm22
+  seclen 128
+  tracks 77
+  sectrk 26
+  blocksize 1024
+  maxdir 64
+  skew 6
+  boottrk 2
+  os 2.2
+end
