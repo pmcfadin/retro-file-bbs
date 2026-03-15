@@ -17,8 +17,11 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Synchronet runtime data (generated in container)
-sbbs/*
-!sbbs/ctrl/
-sbbs/ctrl/*
-!sbbs/ctrl/file.ini
+# Test artifacts
+.tmp/
+
+# CP/M software archive (bind-mounted, not in git)
+cpm/
+
+# External references
+subprojects/

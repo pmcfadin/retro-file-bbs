@@ -1,16 +1,18 @@
-FROM bbsio/synchronet:3.19c
+FROM python:3.11-slim
 
-# Install Python 3 for the indexer
-USER root
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 python3-pip && \
+    apt-get install -y --no-install-recommends gkermit lrzsz && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy indexer scripts
-COPY indexer/ /indexer/
+RUN pip install --no-cache-dir telnetlib3
 
-# Copy entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY indexer/ /app/indexer/
+COPY server/ /app/server/
+COPY entrypoint.sh /app/
 
-ENTRYPOINT ["/entrypoint.sh"]
+WORKDIR /app
+RUN chmod +x entrypoint.sh
+
+EXPOSE 2323 8080
+
+ENTRYPOINT ["/app/entrypoint.sh"]

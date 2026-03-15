@@ -1,5 +1,7 @@
 """describe.py — Extract descriptions from archives (FILE_ID.DIZ, README, heuristics)."""
 
+from __future__ import annotations
+
 import os
 import re
 import sqlite3

@@ -1,172 +1,516 @@
-Telnet CP/M Software Depot BBS — Technical Spec v2 (Containerized, No Serial)
+# CP/M Software Depot — Technical Spec v3
 
-Owner: Patrick (Scout Dog AI Studios)
-Goal: Run a telnet-only BBS inside a container that serves a very large CP/M software library (e.g., SIMTEL20 mirror). Users connect via telnet clients (SyncTERM, netrunner, xterm+telnet) and navigate ANSI/ASCII menus to browse a file-tree with descriptions and download files. No local serial cabling or CP/M-side TUI required.
+**Owner:** Patrick (Scout Dog AI Studios)
+**Version:** 3.0 — Custom Telnet File Browser
 
-⸻
+---
 
-1) Objectives & Scope
-	•	Provide a LAN/WAN telnet BBS that exposes CP/M software with proper descriptions, browsing, and searching.
-	•	Handle very large catalogs gracefully (SIMTEL20 scale) with pre-indexing and paging.
-	•	Offer reliable, simple downloads over telnet (raw transfers or ZMODEM) and optionally HTTP/FTP mirrors for convenience.
+## 1. Goal & Scope
 
-Out of scope (v2): Dial-up/POTS, FidoNet-style echo networks, message networks. Focus is on Files BBS use-case.
+Run a telnet file-browsing server inside a container that serves a CP/M software archive. Users connect via any telnet client (SyncTERM, netrunner, PuTTY, xterm+telnet) and navigate ANSI menus to browse categories, read file descriptions, search, and download files via ZMODEM or raw transfer.
 
-⸻
+**Explicitly:** No BBS engine. No Synchronet, Mystic, or any third-party BBS software. This is a purpose-built Python telnet application that does one thing well: serve files.
 
-2) High-Level Architecture
+**In scope (v3):**
+- Telnet file browser with ANSI TUI
+- Category browsing with paginated file listings
+- Keyword search across filenames and descriptions
+- ZMODEM and raw file downloads
+- HTTP static file mirror on port 8080
+- Automated indexer pipeline (existing scan.py + describe.py)
 
-[Client: SyncTERM/any telnet]  ==(TCP/23 or 2323)==>  [Docker Host]
-                                                   └─ BBS Container
-                                                      ├─ BBS daemon (Mystic or Synchronet)
-                                                      ├─ Importer/Indexer (SIMTEL20 → areas, metadata)
-                                                      ├─ Optional: HTTP static server for file mirror
-                                                      └─ Persistent volumes: /bbs/data, /bbs/files
+**Out of scope:** User accounts, messaging, chat, uploads, FidoNet, QWK networking, FTP.
 
-	•	BBS Engine (choice):
-	•	Synchronet (sbbs): battle-tested, containers available, rich file areas, built-in protocols incl. ZMODEM.
-	•	Mystic BBS: modern, great theming, simple file areas, also Dockerized by community.
-	•	File Areas: Mapped to directory tree under /bbs/files (bind-mount of SIMTEL20 mirror or curated subsets).
-	•	Importer/Indexer: Scans mirror, creates per-file metadata (desc, size, dates), generates FILE_ID.DIZ when missing, and updates BBS area databases for fast browsing.
-	•	Optional Mirrors: HTTP (read-only) served from the same files to allow direct downloads outside telnet.
+---
 
-⸻
+## 2. Architecture
 
-3) BBS Choice & Rationale
+```
+[Client: SyncTERM / telnet]  ==(TCP :2323)==>  [Docker Container]
+                                                 ├─ telnetlib3 server (Python)
+                                                 │   ├─ TUI renderer (blessed)
+                                                 │   ├─ File browser (SQLite queries)
+                                                 │   ├─ Search engine
+                                                 │   └─ ZMODEM downloads (lrzsz subprocess)
+                                                 ├─ Indexer pipeline (runs at startup)
+                                                 │   ├─ scan.py   → SQLite
+                                                 │   └─ describe.py → SQLite
+                                                 ├─ HTTP static server (:8080)
+                                                 └─ Volumes:
+                                                     ├─ /data/cpm (bind-mount, read-only)
+                                                     └─ /data/index.db (SQLite)
+```
 
-Default recommendation: Synchronet for large file depots.
-	•	Mature file area model (nested libraries/dirs).
-	•	Upload/Download protocols, including ZMODEM autodetect for telnet clients (SyncTERM, iTerm w/ rz/sz bridges).
-	•	Good tooling (SCFG, JS scripting). Docker images maintained by community.
+**Components:**
 
-Alternative: Mystic if you prefer its editor and menu system; supports FTP/HTTP add-ons and good file area UX.
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Telnet server | telnetlib3 (async) | Accept connections, manage sessions |
+| TUI rendering | blessed | ANSI colors, box drawing, cursor control |
+| Data layer | SQLite (stdlib) | File metadata, search, pagination |
+| Downloads | lrzsz (`sz`) | ZMODEM file transfer via subprocess |
+| HTTP mirror | Python http.server | Static file serving on :8080 |
+| Indexer | scan.py + describe.py | Catalog files, extract descriptions |
 
-⸻
+---
 
-4) Docker Compose (Synchronet-focused)
+## 3. User Flows
 
+### 3.1 Connect → Welcome
+
+1. User telnets to host:2323
+2. Server detects terminal type (ANSI assumed, graceful ASCII fallback)
+3. Welcome screen displays: banner art, system info, file stats
+4. User presses Enter → category list (main menu)
+
+### 3.2 Browse Categories
+
+1. Category list shows all 12 areas with file counts
+2. User types a number or letter to select a category
+3. → File listing for that category
+
+### 3.3 Browse Files in Category
+
+1. File listing shows: filename, size, one-line description
+2. 20 files per page, with [N]ext / [P]rev / [B]ack navigation
+3. User types a file number → file detail view
+4. User types [S] → search mode
+5. User types [B] → back to category list
+
+### 3.4 File Detail View
+
+1. Shows: filename, size, date, full multi-line description
+2. Options: [D]ownload, [B]ack to listing
+3. If HTTP mirror is enabled, shows download URL
+
+### 3.5 Search
+
+1. User enters search keywords (min 2 characters)
+2. Search matches against filename and description (LIKE query)
+3. Results displayed as paginated file listing
+4. User can select a file → detail view
+5. [B]ack returns to previous screen
+
+### 3.6 Download
+
+1. User selects [D]ownload from file detail
+2. Prompt: [Z]MODEM, [R]aw, or [C]ancel
+3. ZMODEM: subprocess `sz` with file path, client receives
+4. Raw: stream file bytes directly over telnet connection
+5. Return to file detail after transfer
+
+### 3.7 Quit
+
+1. [Q] from any screen → goodbye message → disconnect
+
+---
+
+## 4. Screen Mockups
+
+All screens use single-line box drawing (─│┌┐└┘), cyan/yellow/white palette.
+Terminal width: 80 columns. Height: 24 lines minimum.
+
+### 4.1 Welcome Screen
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│     ██████╗██████╗ ██╗███╗   ███╗                                            │
+│    ██╔════╝██╔══██╗██║████╗ ████║                                            │
+│    ██║     ██████╔╝██║██╔████╔██║                                            │
+│    ██║     ██╔═══╝ ██║██║╚██╔╝██║                                            │
+│    ╚██████╗██║     ██║██║ ╚═╝ ██║                                            │
+│     ╚═════╝╚═╝     ╚═╝╚═╝     ╚═╝                                           │
+│               S O F T W A R E   D E P O T                                    │
+│                                                                              │
+│                   ── Serving the CP/M Community ──                           │
+│                                                                              │
+│    12 Categories  ·  299 Files  ·  ZMODEM Downloads                          │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                   Press [ENTER] to continue...                               │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+Colors: Banner text in bright cyan, "SOFTWARE DEPOT" in yellow, stats in white, border in cyan.
+
+### 4.2 Category List (Main Menu)
+
+```
+┌─ CP/M Software Depot ────────────────────────────────────────────────────────┐
+│                                                                              │
+│   #   Category         Files   Description                                   │
+│  ─── ──────────────── ─────── ──────────────────────────────────────────     │
+│   A   Archivers           22   Archive/compression tools (ARC, LBR, etc.)    │
+│   B   Comm                18   Communications & modem programs               │
+│   C   Editors             15   Text editors & word processors                │
+│   D   FAQ                  8   Frequently asked questions & guides           │
+│   E   Printer             12   Printer utilities & drivers                   │
+│   F   Prod                25   Productivity & office tools                   │
+│   G   Programming         45   Compilers, assemblers, & dev tools            │
+│   H   Sys                 38   System utilities & OS patches                 │
+│   I   Texts               20   Documentation & reference material            │
+│   J   Transfer            14   File transfer protocols & tools               │
+│   K   Unsorted            52   Uncategorized files                           │
+│   L   Zutils              30   Z-System utilities                            │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│   [A-L] Select category   [S] Search   [Q] Quit                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+Colors: Header in bright cyan, letters in yellow, category names in white, file counts in cyan.
+
+### 4.3 File Listing
+
+```
+┌─ Archivers ──────────────────────────────────────────────── Page 1 of 2 ─────┐
+│                                                                              │
+│   #  Filename         Size    Description                                    │
+│  ── ──────────────── ─────── ────────────────────────────────────────────    │
+│   1  ARC521.LBR        32K   ARC file archiver v5.21 for CP/M               │
+│   2  CRUNCH28.LBR      16K   File cruncher/uncruncher v2.8                   │
+│   3  DELBR12.COM        4K   Extract files from LBR libraries                │
+│   4  LT31.LBR          24K   Library tool v3.1 — create/manage LBR          │
+│   5  LSWEEP14.LBR      20K   Sweep utility for LBR file management          │
+│   6  NULU152.LBR       48K   New Utility for LBR files v1.52                 │
+│   7  UNARC16.COM        8K   Extract ARC archives                            │
+│   8  UNZIP101.COM      12K   Extract ZIP archives under CP/M                 │
+│   9  ZIPFILES.TXT       2K   Guide to ZIP format under CP/M                  │
+│  10  ARCE.COM           6K   ARC file extraction utility                     │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│   [#] View file   [N]ext   [P]rev   [S] Search   [B]ack   [Q]uit            │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+Colors: Header/category name in yellow, filenames in bright white, sizes in cyan, descriptions in white.
+
+### 4.4 File Detail View
+
+```
+┌─ File Detail ────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   Filename:  ARC521.LBR                                                      │
+│   Category:  Archivers                                                       │
+│   Size:      32,768 bytes (32K)                                              │
+│   Modified:  1987-03-15                                                      │
+│                                                                              │
+│  ─────────────────────────────────────────────────────────────────────────   │
+│                                                                              │
+│   ARC File Archiver v5.21 for CP/M-80                                        │
+│                                                                              │
+│   Full-featured archive utility supporting creation,                         │
+│   extraction, and management of .ARC format files.                           │
+│   Compatible with MS-DOS ARC format. Supports                                │
+│   Squeeze and Crunch compression methods.                                    │
+│                                                                              │
+│   Originally by System Enhancement Associates,                               │
+│   CP/M port by Howard Goldstein.                                             │
+│                                                                              │
+│  ─────────────────────────────────────────────────────────────────────────   │
+│   HTTP: http://host:8080/cpm/archivers/ARC521.LBR                           │
+│                                                                              │
+│   [D]ownload   [B]ack                                                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.5 Search Results
+
+```
+┌─ Search Results: "arc" ──────────────────────────────── 5 matches found ─────┐
+│                                                                              │
+│   #  Filename         Size   Area          Description                        │
+│  ── ──────────────── ────── ──────────── ──────────────────────────────────  │
+│   1  ARC521.LBR       32K   Archivers    ARC file archiver v5.21            │
+│   2  ARCE.COM          6K   Archivers    ARC extraction utility              │
+│   3  UNARC16.COM       8K   Archivers    Extract ARC archives               │
+│   4  MARC.COM          4K   Zutils       Member ARC — ZCPR3 archive tool    │
+│   5  ARCZ.DOC          3K   Texts        Guide to ARC tools under CP/M      │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│   [#] View file   [S] New search   [B]ack   [Q]uit                           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 4.6 Download Prompt
+
+```
+┌─ Download ───────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   File: ARC521.LBR (32K)                                                     │
+│                                                                              │
+│   Select transfer protocol:                                                  │
+│                                                                              │
+│     [Z] ZMODEM  (recommended — use with SyncTERM)                            │
+│     [R] Raw     (direct binary transfer)                                     │
+│     [C] Cancel                                                               │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Indexer Pipeline
+
+Carried forward from v2. The indexer is proven and unchanged.
+
+### 5.1 scan.py
+
+Walks the CP/M file archive directory tree. For each file:
+- Records path, area (top-level directory name), filename, size, mtime
+- Upserts into SQLite `files` table
+- Skips unchanged files (same mtime + size) for incremental updates
+
+### 5.2 describe.py
+
+For each undescribed file in the database:
+1. **ZIP archives:** Extract FILE_ID.DIZ, then README/DOC/TXT
+2. **LBR archives:** Parse 32-byte directory entries, extract descriptive files
+3. **ARC archives:** Parse header blocks, look for FILE_ID.DIZ/README
+4. **Sibling files:** Check for companion .DOC/.TXT/README in same directory
+5. **Heuristic fallback:** Generate one-liner from filename tokens
+
+Output: normalized text (72 cols, 10 lines max, control chars stripped).
+
+### 5.3 SQLite Schema
+
+```sql
+CREATE TABLE IF NOT EXISTS files (
+    path TEXT PRIMARY KEY,
+    area TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    mtime REAL NOT NULL,
+    description TEXT DEFAULT '',
+    described INTEGER DEFAULT 0
+);
+```
+
+### 5.4 Categories (12 areas)
+
+| Area | Description |
+|------|-------------|
+| archivers | Archive & compression tools |
+| comm | Communications & modem programs |
+| editors | Text editors & word processors |
+| faq | FAQs & guides |
+| printer | Printer utilities & drivers |
+| prod | Productivity & office tools |
+| programming | Compilers, assemblers, dev tools |
+| sys | System utilities & OS patches |
+| texts | Documentation & reference |
+| transfer | File transfer protocols & tools |
+| unsorted | Uncategorized files |
+| zutils | Z-System utilities |
+
+---
+
+## 6. Tech Stack
+
+| Dependency | Version | Purpose |
+|-----------|---------|---------|
+| Python | 3.11+ | Runtime |
+| telnetlib3 | latest | Async telnet server (RFC 854) |
+| blessed | latest | Terminal capabilities, ANSI rendering |
+| lrzsz | system pkg | ZMODEM transfers (`sz` binary) |
+| SQLite | stdlib | File metadata database |
+
+**No other external dependencies.** The indexer uses stdlib only.
+
+---
+
+## 7. Docker Setup
+
+### 7.1 Dockerfile
+
+```dockerfile
+FROM python:3.11-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends lrzsz && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir telnetlib3 blessed
+
+COPY indexer/ /app/indexer/
+COPY server/  /app/server/
+COPY entrypoint.sh /app/
+
+WORKDIR /app
+RUN chmod +x entrypoint.sh
+
+EXPOSE 2323 8080
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+```
+
+### 7.2 docker-compose.yml
+
+```yaml
 services:
-  sbbs:
-    image: ghcr.io/synchronetbbs/sbbs:latest
-    container_name: cpmbbs
+  cpmdepot:
+    build: .
+    container_name: cpmdepot
+    ports:
+      - "2323:2323"   # telnet
+      - "8080:8080"   # HTTP mirror
+    volumes:
+      - ./cpm:/data/cpm:ro
+      - index_data:/data
     environment:
       - TZ=America/Los_Angeles
-    ports:
-      - "2323:23"      # telnet (non-privileged host port)
-      - "8080:80"      # optional web interface
-      - "2121:21"      # optional FTP (passive ports handled by iptables or docker)
-    volumes:
-      - ./sbbs:/sbbs            # Synchronet config/data
-      - /path/to/simtel:/sbbs/xfer/simtel:ro   # your mirror
-      - ./importer:/importer    # indexer scripts
     restart: unless-stopped
 
-Adjust /path/to/simtel to your library root. You can add more mounts for curated areas (e.g., /sbbs/xfer/editors, /sbbs/xfer/comm).
+volumes:
+  index_data:
+```
 
-⸻
+### 7.3 entrypoint.sh
 
-5) File Areas & Catalog Strategy
+```bash
+#!/bin/bash
+set -e
 
-5.1 Area Layout
-	•	Map top-level Libraries to big categories (e.g., SIMTEL20, UTILS, COMM, DEV, GAMES).
-	•	Under each, map directories to Sub-areas mirroring the filesystem.
-	•	Use Synchronet SCFG to define:
-	•	Libraries → Xfer Libraries
-	•	Dirs per library → Xfer Directories (path: /sbbs/xfer/simtel/<subdir>)
+DB_PATH="/data/index.db"
+CPM_ROOT="/data/cpm"
 
-5.2 Descriptions (FILE_ID.DIZ preferred)
-	•	Many archives contain FILE_ID.DIZ. Importer should:
-	1.	If FILE_ID.DIZ exists in archive (.LBR, .ARC, .ZIP), extract first ~10 lines as description.
-	2.	Else, derive from nearby README, *.DOC, *.TXT (first 4–10 non-empty lines).
-	3.	Else, generate heuristic one-liner from filename tokens.
-	•	Save results back into the BBS area databases so dir listings are instant.
+echo "=== CP/M Software Depot ==="
 
-5.3 Scale & Performance
-	•	Incremental import: track file mtime/size hash to avoid reprocessing.
-	•	Pagination: ensure BBS shows pages of ~20–40 entries with next/prev.
-	•	Index DB: maintain a small SQLite (or JS DB for Synchronet) as the importer’s cache.
+# Run indexer pipeline
+if [ -d "$CPM_ROOT" ]; then
+    echo "Step 1/2: Scanning file areas..."
+    python3 /app/indexer/scan.py "$CPM_ROOT" "$DB_PATH"
 
-⸻
+    echo "Step 2/2: Extracting descriptions..."
+    python3 /app/indexer/describe.py "$DB_PATH"
+else
+    echo "Warning: No CP/M files at $CPM_ROOT"
+fi
 
-6) Importer/Indexer (Container Task)
+# Start HTTP mirror in background
+echo "Starting HTTP mirror on :8080..."
+python3 -m http.server 8080 --directory "$CPM_ROOT" &
 
-Language: Python or Node.js (your choice; below assumes Python)
+# Start telnet server
+echo "Starting telnet server on :2323..."
+exec python3 /app/server/main.py --db "$DB_PATH" --cpm-root "$CPM_ROOT" --port 2323
+```
 
-Responsibilities:
-	•	Walk /sbbs/xfer/simtel (read-only).
-	•	For archives (.LBR, .ZIP, .ARC): try to read FILE_ID.DIZ. For .LBR, use lbrutil or a pure-Python reader; as fallback, skip extraction but keep filename and size.
-	•	For loose files (.COM, .HEX, .DOC): search sibling text for description.
-	•	Normalize line endings, strip control chars, wrap 72 cols.
-	•	Write Synchronet dir metadata via:
-	•	Option A: Synchronet jsexec sbbslist.js-friendly JSON files for fast import.
-	•	Option B: Script Synchronet scfg CLI (or exec/sbbsctrl addfile) to insert/update entries.
+---
 
-Run mode:
-	•	On container start, full import if no cache; otherwise incremental.
-	•	Optional cron (/etc/cron.d) to refresh nightly.
+## 8. HTTP Mirror
 
-⸻
+A simple static file server on port 8080, serving the CP/M archive directory directly.
 
-7) Telnet UX (Client-Facing)
-	•	ANSI/ASCII menu (auto-detect terminal; gracefully degrade to plain ASCII for minimal clients).
-	•	Hierarchical browsing: Libraries → Directories → Files.
-	•	Search: title/description keyword search (maps to index/cache).
-	•	Preview: press V to view description/READ.ME (paged).
-	•	Download: press D (BBS prompts protocol). Recommend offering:
-	•	Raw (no protocol) for simple terminals.
-	•	ZMODEM if client supports (SyncTERM/MLTERM); fastest and robust.
-	•	Optional: display a copyable HTTP URL mirroring the file (http://host:8080/xfer/...) for out-of-band download from a modern browser.
+- Uses Python's built-in `http.server` module (no additional dependencies)
+- Read-only access to the same bind-mounted `/data/cpm` directory
+- Directory listing enabled for browser-based browsing
+- File detail view shows the corresponding HTTP URL for out-of-band downloads
 
-⸻
+---
 
-8) HTTP/FTP Mirrors (Optional but Recommended)
-	•	Run the Synchronet built-in web server (port 80 mapped to host 8080) to expose /xfer read-only.
-	•	Optionally enable FTP (passive ports require NAT config) for classic tooling.
-	•	Benefits: easy mass download/browsing by modern machines; telnet users can still get files via BBS UI.
+## 9. Server Application Structure
 
-⸻
+```
+server/
+  main.py       — telnetlib3 server entry point, connection handler
+  tui.py        — ANSI screen rendering: boxes, colors, pagination
+  browser.py    — Category/file browsing logic, SQLite queries
+  search.py     — Keyword search across filename + description
+  download.py   — ZMODEM (sz subprocess) and raw transfer
+```
 
-9) Security, Users & Access
-	•	LAN-only by default (bind to 0.0.0.0:2323 but firewall to your LAN). Expose to WAN only if desired.
-	•	Create a single guest user with file download permissions; disable uploads.
-	•	Read‑only bind mounts for file areas.
-	•	Container runs as non-root; set proper UID/GID on mounted volumes.
+### 9.1 main.py
 
-⸻
+- Creates async telnetlib3 server on port 2323
+- Each connection gets a session with its own state machine
+- States: WELCOME → CATEGORIES → FILE_LIST → FILE_DETAIL → SEARCH → DOWNLOAD
+- Handles terminal negotiation (NAWS for window size, TTYPE for terminal type)
 
-10) Acceptance Criteria (v2 Telnet)
-	1.	Container starts; BBS listens on host :2323 (telnet).
-	2.	From SyncTERM: connect, authenticate as guest, navigate Libraries → Dirs → Files.
-	3.	Large directories (>1,000 files) page quickly (≤ 500 ms per page after import).
-	4.	Search returns relevant matches with preview and quick navigation.
-	5.	Download a .COM and a .LBR via ZMODEM successfully.
-	6.	Optional: same file accessible via HTTP at http://host:8080/xfer/....
+### 9.2 tui.py
 
-⸻
+- Box drawing with single-line Unicode characters (─│┌┐└┘)
+- Color palette: cyan borders, yellow highlights, white text
+- Pagination helper: given items + page size, renders page N of M
+- Clear screen, cursor positioning, status bar
 
-11) Deliverables
-	•	docker-compose.yml (as above)
-	•	BBS engine config directory (./sbbs pre-seeded with minimal SCFG)
-	•	importer/ scripts:
-	•	scan.py (walk & cache)
-	•	describe.py (derive FILE_ID.DIZ/desc)
-	•	sync_synchronet.py (apply to BBS areas)
-	•	README with quickstart, client list (SyncTERM, netrunner), and admin tips.
+### 9.3 browser.py
 
-⸻
+- `get_categories()` → list of (area, file_count) from SQLite
+- `get_files(area, page, per_page)` → paginated file list
+- `get_file_detail(path)` → full file metadata
+- `get_total_stats()` → total files, total categories for welcome screen
 
-12) Roadmap
-	•	v2.1: Add Mystic variant with theme + menu art.
-	•	v2.2: Auto-build nightly indexes; sitemaps for HTTP mirror.
-	•	v2.3: Optional login + per-user favorites; download stats.
-	•	v3.0: Multi-node (Docker Swarm/K8s) for WAN exposure; GeoIP-based mirrors.
+### 9.4 search.py
 
-⸻
+- `search_files(query, page, per_page)` → results matching filename OR description
+- Uses SQLite LIKE with wildcards: `WHERE filename LIKE ? OR description LIKE ?`
+- Minimum 2-character query
 
-13) Notes for Codex
-	•	Prefer Synchronet unless you have a strong Mystic preference; focus on file areas and speed.
-	•	Descriptions are king: always try FILE_ID.DIZ; fall back to DOC/README lines; last resort heuristics.
-	•	Keep imports idempotent; don’t duplicate entries.
-	•	Expose telnet on 2323 by default to avoid privileged port binding.
+### 9.5 download.py
 
-End of Spec v2 (Telnet‑only)
+- `zmodem_send(filepath, writer)` → subprocess `sz` with file path
+- `raw_send(filepath, writer)` → stream bytes directly over connection
+- Error handling for missing files, transfer failures
+
+---
+
+## 10. Acceptance Criteria
+
+1. **Container starts:** `docker compose up --build` succeeds; telnet server listens on host :2323.
+2. **Welcome screen:** Connect via SyncTERM/telnet → see banner with file stats → press Enter.
+3. **Category browsing:** Category list shows 12 areas with file counts → select one → paginated file listing.
+4. **File details:** Select a file → see full description, size, date, download options.
+5. **Search:** Press [S] → enter keyword → see matching results across all categories.
+6. **ZMODEM download:** Select file → choose ZMODEM → successful transfer via SyncTERM.
+7. **Raw download:** Select file → choose Raw → file transfers over telnet connection.
+8. **HTTP mirror:** Same file accessible at `http://host:8080/archivers/ARC521.LBR`.
+9. **Pagination:** Categories with >20 files show paged listings with next/prev navigation.
+10. **No login required:** No username, password, email, or registration prompts of any kind.
+11. **Performance:** Page rendering ≤ 500ms; search results ≤ 1s for full catalog.
+12. **Graceful disconnect:** [Q] from any screen → goodbye → clean connection close.
+
+---
+
+## 11. Deliverables
+
+- `docker-compose.yml` — single-container setup
+- `Dockerfile` — Python 3.11-slim + lrzsz + telnetlib3 + blessed
+- `entrypoint.sh` — indexer pipeline + server startup
+- `server/main.py` — telnet server entry point
+- `server/tui.py` — ANSI TUI rendering
+- `server/browser.py` — file browsing logic
+- `server/search.py` — keyword search
+- `server/download.py` — ZMODEM/raw transfers
+- `indexer/scan.py` — file scanner (existing, unchanged)
+- `indexer/describe.py` — description extractor (existing, unchanged)
+
+---
+
+End of Spec v3 (Custom Telnet File Browser)
