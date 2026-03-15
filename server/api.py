@@ -12,6 +12,7 @@ import uuid
 from dataclasses import dataclass
 
 from fastapi import FastAPI, HTTPException, Query, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -498,9 +499,23 @@ async def ws_indexer_output(websocket: WebSocket):
 # --- Static files (SPA fallback) ---
 
 def mount_static(static_dir: str) -> None:
-    """Mount the React build directory as static files with SPA fallback."""
-    if os.path.isdir(static_dir):
-        app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
-        log.info("Mounted admin UI from %s", static_dir)
-    else:
+    """Mount the React build directory with SPA fallback for client-side routing."""
+    if not os.path.isdir(static_dir):
         log.warning("Admin UI directory not found: %s — API-only mode", static_dir)
+        return
+
+    index_html = os.path.join(static_dir, "index.html")
+
+    # Serve static assets (JS, CSS, images) directly
+    app.mount("/assets", StaticFiles(directory=os.path.join(static_dir, "assets")), name="assets")
+
+    # SPA catch-all: serve index.html for any non-API path
+    @app.get("/{full_path:path}")
+    async def spa_fallback(full_path: str):
+        # Serve actual files if they exist (favicon.svg, etc.)
+        file_path = os.path.join(static_dir, full_path)
+        if full_path and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(index_html)
+
+    log.info("Mounted admin UI from %s", static_dir)

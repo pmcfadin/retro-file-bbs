@@ -25,18 +25,20 @@ test.describe("Navigation", () => {
   });
 
   test("active sidebar link is highlighted", async ({ page }) => {
-    await page.goto("/upload");
+    await page.goto("/");
+    await page.click('a[href="/upload"]');
     const uploadLink = page.locator('a[href="/upload"]');
     await expect(uploadLink).toHaveClass(/active/);
   });
 
   test("CRT scanline toggle works", async ({ page }) => {
-    await page.goto("/settings");
+    await page.goto("/");
+    await page.click('a[href="/settings"]');
+    await expect(page.locator(".page-title")).toHaveText("SETTINGS");
 
-    // Toggle scanlines off
-    await page.click("text=SCANLINES");
+    // Toggle scanlines
+    await page.click("button:has-text('SCANLINES')");
     const bodyClass = await page.evaluate(() => document.body.className);
-    // Should have toggled
     expect(typeof bodyClass).toBe("string");
   });
 });
