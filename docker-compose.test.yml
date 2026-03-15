@@ -1,0 +1,5 @@
+services:
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test

@@ -1,0 +1,45 @@
+FROM python:3.11-slim
+
+ARG Z80PACK_COMMIT=91fd28eb04e675c2127df88ed3f40675e15282e2
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PYTHONUNBUFFERED=1 \
+    Z80PACK_ROOT=/opt/z80pack \
+    Z80PACK_HOME=/opt/z80pack \
+    Z80PACK_CPMSIM=/opt/z80pack/cpmsim \
+    PATH="/opt/z80pack/cpmsim/srctools:${PATH}"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        cpmtools \
+        git \
+        gkermit \
+        lrzsz && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git init "${Z80PACK_ROOT}" && \
+    git -C "${Z80PACK_ROOT}" remote add origin https://github.com/udo-munk/z80pack.git && \
+    git -C "${Z80PACK_ROOT}" fetch --depth 1 origin "${Z80PACK_COMMIT}" && \
+    git -C "${Z80PACK_ROOT}" checkout --detach FETCH_HEAD && \
+    make -C "${Z80PACK_CPMSIM}/srcsim" build && \
+    make -C "${Z80PACK_CPMSIM}/srctools" && \
+    printf '%s\n' \
+        '#!/bin/sh' \
+        "cd ${Z80PACK_CPMSIM}" \
+        'exec ./cpm22 "$@"' > /usr/local/bin/z80pack-cpm22 && \
+    chmod +x /usr/local/bin/z80pack-cpm22 && \
+    rm -rf "${Z80PACK_ROOT}/.git"
+
+RUN pip install pytest pytest-asyncio pexpect telnetlib3
+
+COPY emulation/ /app/emulation/
+COPY indexer/ /app/indexer/
+COPY server/ /app/server/
+COPY tests/ /app/tests/
+COPY pytest.ini /app/
+
+WORKDIR /app
+
+ENTRYPOINT ["pytest", "-v", "--tb=short"]
