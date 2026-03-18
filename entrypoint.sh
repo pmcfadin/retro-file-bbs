@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
 
-DB_PATH="/data/index.db"
-CPM_ROOT="/data/cpm"
+DB_PATH="${DB_PATH:-/data/index.db}"
+CPM_ROOT="${CPM_ROOT:-/data/cpm}"
+TELNET_PORT="${TELNET_PORT:-2323}"
+WEB_PORT="${WEB_PORT:-8080}"
 
-echo "=== CP/M Software Depot ==="
+echo "=== Retro File BBS ==="
 
 # Run indexer pipeline
 if [ -d "$CPM_ROOT" ]; then
@@ -18,5 +20,5 @@ else
 fi
 
 # Start telnet + admin web UI server
-echo "Starting telnet server on :2323 and admin UI on :8080..."
-exec python3 -m server.main --db "$DB_PATH" --cpm-root "$CPM_ROOT" --port 2323 --web-port 8080
+echo "Starting telnet server on :${TELNET_PORT} and admin UI on :${WEB_PORT}..."
+exec python3 -m server.main --db "$DB_PATH" --cpm-root "$CPM_ROOT" --port "$TELNET_PORT" --web-port "$WEB_PORT"

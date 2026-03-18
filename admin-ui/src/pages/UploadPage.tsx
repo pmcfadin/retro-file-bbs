@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api";
-import type { Category } from "../api";
+import type { Category, DskMetadata } from "../api";
 import { formatSize } from "../utils";
 import { useToast } from "../useToast";
 
@@ -16,6 +17,10 @@ export default function UploadPage() {
   const [extractMode, setExtractMode] = useState(false);
   const [stagingId, setStagingId] = useState("");
   const [extractedFiles, setExtractedFiles] = useState<{ name: string; size: number; selected: boolean }[]>([]);
+  const [dskMetadata, setDskMetadata] = useState<DskMetadata | null>(null);
+
+  // Post-commit state
+  const [committed, setCommitted] = useState<string[] | null>(null);
 
   useEffect(() => {
     api.getCategories().then((cats) => {
@@ -26,7 +31,7 @@ export default function UploadPage() {
 
   const isExtractable = (name: string) => {
     const lower = name.toLowerCase();
-    return lower.endsWith(".zip") || lower.endsWith(".dsk");
+    return lower.endsWith(".zip") || lower.endsWith(".dsk") || lower.endsWith(".img");
   };
 
   const handleFiles = useCallback(
@@ -39,16 +44,16 @@ export default function UploadPage() {
 
       const file = fileList[0];
       setUploading(true);
+      setCommitted(null);
 
       try {
         if (isExtractable(file.name)) {
-          // Extract flow
           const res = await api.extractArchive(file);
           setStagingId(res.staging_id);
           setExtractedFiles(res.files.map((f) => ({ ...f, selected: true })));
+          setDskMetadata(res.dsk_metadata);
           setExtractMode(true);
         } else {
-          // Direct upload
           await api.uploadFile(file, area);
           showToast(`Uploaded ${file.name}`);
         }
@@ -76,10 +81,11 @@ export default function UploadPage() {
     setUploading(true);
     try {
       const res = await api.commitExtract(stagingId, area, selected);
-      showToast(`Committed ${res.committed.length} file(s)`);
+      setCommitted(res.committed);
       setExtractMode(false);
       setExtractedFiles([]);
       setStagingId("");
+      setDskMetadata(null);
     } catch (e: any) {
       showToast(e.message, true);
     } finally {
@@ -108,7 +114,28 @@ export default function UploadPage() {
         </select>
       </div>
 
-      {!extractMode && (
+      {/* Post-commit success message */}
+      {committed && (
+        <div className="editor-panel" style={{ borderColor: "var(--green)" }}>
+          <h3 style={{ color: "var(--green)" }}>Committed {committed.length} file(s)</h3>
+          <ul style={{ listStyle: "none", padding: 0, margin: "8px 0" }}>
+            {committed.map((f) => (
+              <li key={f} style={{ color: "var(--green)", fontSize: 13 }}>+ {f}</li>
+            ))}
+          </ul>
+          <div className="editor-actions">
+            <Link to="/" className="term-btn" style={{ textDecoration: "none" }}>
+              [ VIEW FILES ]
+            </Link>
+            <button className="term-btn" onClick={() => setCommitted(null)}>
+              [ UPLOAD MORE ]
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Drop zone (hidden when extracting or showing commit result) */}
+      {!extractMode && !committed && (
         <>
           <div
             className={`drop-zone ${dragover ? "dragover" : ""}`}
@@ -121,8 +148,8 @@ export default function UploadPage() {
             onClick={() => fileRef.current?.click()}
           >
             {uploading
-              ? "Uploading..."
-              : "Drop file here or click to browse\n\nZIP and DSK files will be extracted for review"}
+              ? "Analyzing..."
+              : "Drop file here or click to browse\n\nZIP, DSK, and IMG files will be extracted for review"}
           </div>
           <input
             ref={fileRef}
@@ -133,9 +160,30 @@ export default function UploadPage() {
         </>
       )}
 
+      {/* Extract review panel */}
       {extractMode && (
         <div className="editor-panel">
           <h3>Extract Review</h3>
+
+          {/* DSK metadata banner */}
+          {dskMetadata && (
+            <div style={{ marginBottom: 16, padding: "8px 12px", border: "1px solid var(--border)" }}>
+              <div style={{ color: "var(--amber)", fontSize: 13, marginBottom: 4 }}>
+                Disk Image Detected
+              </div>
+              <dl className="info-grid" style={{ fontSize: 12 }}>
+                <dt>Format</dt>
+                <dd>{dskMetadata.display_name}</dd>
+                <dt>System</dt>
+                <dd>{dskMetadata.system}</dd>
+                <dt>Image Size</dt>
+                <dd>{formatSize(dskMetadata.image_size)}</dd>
+                <dt>Files Found</dt>
+                <dd>{dskMetadata.file_count}</dd>
+              </dl>
+            </div>
+          )}
+
           <p style={{ color: "var(--dim-green)", marginBottom: 12 }}>
             Select files to add to the catalog:
           </p>
@@ -155,10 +203,17 @@ export default function UploadPage() {
                   <td>{formatSize(f.size)}</td>
                 </tr>
               ))}
+              {extractedFiles.length === 0 && (
+                <tr>
+                  <td colSpan={3} style={{ color: "var(--dim-green)" }}>
+                    No files found in archive
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
           <div className="editor-actions" style={{ marginTop: 12 }}>
-            <button className="term-btn" onClick={handleCommit} disabled={uploading}>
+            <button className="term-btn" onClick={handleCommit} disabled={uploading || extractedFiles.length === 0}>
               [ COMMIT ]
             </button>
             <button
@@ -166,6 +221,7 @@ export default function UploadPage() {
               onClick={() => {
                 setExtractMode(false);
                 setExtractedFiles([]);
+                setDskMetadata(null);
               }}
             >
               [ CANCEL ]

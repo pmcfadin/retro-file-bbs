@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api";
-import type { Category, FileEntry } from "../api";
+import type { Category, DskPreview, FileEntry } from "../api";
 import { formatSize } from "../utils";
 import { useToast } from "../useToast";
 
@@ -17,6 +17,7 @@ export default function FilesPage() {
   const [area, setArea] = useState("");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [perPage, setPerPage] = useState(25);
   const [selected, setSelected] = useState<FileEntry | null>(null);
 
   // Editor state
@@ -25,20 +26,22 @@ export default function FilesPage() {
   const [saving, setSaving] = useState(false);
   const { toast, showToast } = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [dskPreview, setDskPreview] = useState<DskPreview | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   useEffect(() => {
     api.getCategories().then(setCategories).catch(console.error);
   }, []);
 
   const loadFiles = useCallback(() => {
-    api.getFiles({ area: area || undefined, search: search || undefined, page, per_page: 50 })
+    api.getFiles({ area: area || undefined, search: search || undefined, page, per_page: perPage })
       .then((res) => {
         setFiles(res.files);
         setTotal(res.total);
         setTotalPages(res.total_pages);
       })
       .catch(console.error);
-  }, [area, search, page]);
+  }, [area, search, page, perPage]);
 
   useEffect(() => {
     loadFiles();
@@ -48,6 +51,15 @@ export default function FilesPage() {
     setSelected(f);
     setEditDesc(f.description || "");
     setEditArea(f.area);
+    setDskPreview(null);
+    const lower = f.filename.toLowerCase();
+    if (lower.endsWith(".dsk") || lower.endsWith(".img")) {
+      setPreviewLoading(true);
+      api.getDskPreview(relPath(f))
+        .then(setDskPreview)
+        .catch(() => setDskPreview(null))
+        .finally(() => setPreviewLoading(false));
+    }
   };
 
   const handleSave = async () => {
@@ -57,6 +69,7 @@ export default function FilesPage() {
       await api.patchFile(relPath(selected), { description: editDesc, area: editArea });
       showToast("File updated");
       setSelected(null);
+      setDskPreview(null);
       loadFiles();
     } catch (e: any) {
       showToast(e.message, true);
@@ -71,6 +84,7 @@ export default function FilesPage() {
       await api.deleteFile(relPath(selected));
       showToast("File deleted");
       setSelected(null);
+      setDskPreview(null);
       setConfirmDelete(false);
       loadFiles();
     } catch (e: any) {
@@ -129,6 +143,19 @@ export default function FilesPage() {
             </option>
           ))}
         </select>
+
+        <select
+          className="term-select"
+          value={perPage}
+          onChange={(e) => {
+            setPerPage(Number(e.target.value));
+            setPage(1);
+          }}
+        >
+          {[10, 25, 50, 100].map((n) => (
+            <option key={n} value={n}>{n} per page</option>
+          ))}
+        </select>
       </div>
 
       <table className="term-table">
@@ -179,6 +206,18 @@ export default function FilesPage() {
       {selected && (
         <div className="editor-panel">
           <h3>Edit: {selected.filename}</h3>
+          {previewLoading && <div style={{ color: "var(--dim-green)", marginBottom: 12 }}>Loading disk preview...</div>}
+          {dskPreview && (
+            <div className="dsk-preview">
+              <div className="dsk-preview-header">
+                Disk Image Contents — {dskPreview.display_name} ({dskPreview.system})
+              </div>
+              <div style={{ fontSize: 12, color: "var(--dim-green)", marginBottom: 8 }}>
+                Format: {dskPreview.format} | Files: {dskPreview.file_count} | Size: {dskPreview.image_size} bytes
+              </div>
+              <pre>{dskPreview.file_list.filter(Boolean).join("\n")}</pre>
+            </div>
+          )}
           <div className="editor-field">
             <label>Description</label>
             <textarea value={editDesc} onChange={(e) => setEditDesc(e.target.value)} />
@@ -200,7 +239,7 @@ export default function FilesPage() {
             <button className="term-btn danger" onClick={() => setConfirmDelete(true)}>
               [ DELETE ]
             </button>
-            <button className="term-btn" onClick={() => setSelected(null)}>
+            <button className="term-btn" onClick={() => { setSelected(null); setDskPreview(null); }}>
               [ CANCEL ]
             </button>
           </div>

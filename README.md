@@ -1,4 +1,4 @@
-# CP/M Software Depot
+# Retro File BBS
 
 A telnet BBS serving a curated CP/M software archive. Browse categories, search files, and download via ZMODEM — all from an ANSI terminal.
 
@@ -103,6 +103,21 @@ ruff check indexer/ server/ emulation/
 python3 indexer/scan.py ./cpm /tmp/test.db
 python3 indexer/describe.py /tmp/test.db
 ```
+
+## Deployment (NAS / Portainer)
+
+For production deployment on a NAS:
+
+```bash
+# Copy and edit the env file
+cp .env.example .env
+# Edit .env with your paths and ports
+
+# Deploy with the production compose file
+docker compose -f docker-compose.prod.yml up -d
+```
+
+The image is auto-built and pushed to `ghcr.io/pmcfadin/retro-file-bbs` on every push to `main`.
 
 ## Recommended Clients
 

@@ -51,9 +51,22 @@ export interface IndexerStatusResponse {
   category_count: number;
 }
 
+export interface DskMetadata {
+  format: string;
+  display_name: string;
+  system: string;
+  file_count: number;
+  image_size: number;
+}
+
+export interface DskPreview extends DskMetadata {
+  file_list: string[];
+}
+
 export interface ExtractResponse {
   staging_id: string;
   files: { name: string; size: number }[];
+  dsk_metadata: DskMetadata | null;
 }
 
 async function fetchJSON<T>(url: string, init?: RequestInit): Promise<T> {
@@ -78,6 +91,8 @@ export const api = {
   },
 
   getFileDetail: (path: string) => fetchJSON<FileEntry>(`${BASE}/files/${path}`),
+
+  getDskPreview: (path: string) => fetchJSON<DskPreview>(`${BASE}/preview/${path}`),
 
   patchFile: (path: string, data: { description?: string; area?: string }) =>
     fetchJSON<{ status: string }>(`${BASE}/files/${path}`, {

@@ -1,0 +1,16 @@
+services:
+  cpmdepot:
+    image: ghcr.io/pmcfadin/retro-file-bbs:latest
+    container_name: retro-file-bbs
+    ports:
+      - "${TELNET_PORT:-2323}:2323"
+      - "${WEB_PORT:-8080}:8080"
+    volumes:
+      - ${CPM_PATH:-./cpm}:/data/cpm:ro
+      - retro_file_bbs_data:/data
+    environment:
+      - TZ=${TZ:-UTC}
+    restart: unless-stopped
+
+volumes:
+  retro_file_bbs_data:

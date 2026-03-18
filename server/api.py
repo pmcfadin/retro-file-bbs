@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from server.browser import CATEGORY_INFO, get_categories, get_file_detail, get_files
+from server.dsk import detect_format, extract_with_format
 from server.search import search_files
 from server.sessions import active_sessions, connection_history
 
@@ -247,6 +248,31 @@ def api_file_patch(path: str, patch: FilePatch):
     return {"status": "ok"}
 
 
+@app.get("/api/preview/{path:path}")
+async def api_file_preview(path: str):
+    if not path.lower().endswith((".dsk", ".img")):
+        raise HTTPException(400, "Not a disk image file")
+    full_path = os.path.join(CPM_ROOT, path)
+    with _open_db() as db:
+        detail = get_file_detail(db, full_path)
+    if detail is None:
+        raise HTTPException(404, "File not found")
+    disk_path = detail["path"]
+    if not os.path.isfile(disk_path):
+        raise HTTPException(404, "File not found on disk")
+    result = await detect_format(disk_path)
+    if result is None:
+        raise HTTPException(400, "Could not detect CP/M disk format")
+    return {
+        "format": result["format"],
+        "display_name": result["display_name"],
+        "system": result["system"],
+        "file_count": result["file_count"],
+        "image_size": result["image_size"],
+        "file_list": result["file_list"],
+    }
+
+
 @app.delete("/api/files/{path:path}")
 def api_file_delete(path: str):
     full_path = os.path.join(CPM_ROOT, path)
@@ -340,45 +366,30 @@ async def api_extract(file: UploadFile):
                     })
         except zipfile.BadZipFile:
             raise HTTPException(400, "Invalid ZIP file")
-    elif lower.endswith(".dsk"):
-        # Use cpmtools to extract all files at once
-        try:
-            result = await asyncio.create_subprocess_exec(
-                "cpmls", "-f", "ibm-3740", archive_path,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, _ = await result.communicate()
-            file_names = []
-            for line in stdout.decode(errors="replace").strip().splitlines():
-                parts = line.split()
-                if parts:
-                    file_names.append(parts[-1])
+    elif lower.endswith(".dsk") or lower.endswith(".img"):
+        # Auto-detect CP/M disk format and extract
+        detected = await detect_format(archive_path)
+        if detected is None:
+            raise HTTPException(400, "Could not detect CP/M disk format (is cpmtools installed?)")
 
-            # Extract all files in one cpmcp call
-            if file_names:
-                proc = await asyncio.create_subprocess_exec(
-                    "cpmcp", "-f", "ibm-3740", archive_path, "0:*.*", staging_path,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                await proc.communicate()
-
-                for fname in file_names:
-                    fpath = os.path.join(staging_path, fname)
-                    if os.path.isfile(fpath):
-                        extracted_files.append({
-                            "name": fname,
-                            "size": os.path.getsize(fpath),
-                        })
-        except FileNotFoundError:
-            raise HTTPException(500, "cpmtools not installed")
+        fmt = detected["format"]
+        extracted_files = await extract_with_format(archive_path, staging_path, fmt)
+        dsk_metadata = {
+            "format": detected["format"],
+            "display_name": detected["display_name"],
+            "system": detected["system"],
+            "file_count": detected["file_count"],
+            "image_size": detected["image_size"],
+        }
     else:
         # Not extractable — just list the file itself
         extracted_files.append({"name": filename, "size": len(content)})
+        dsk_metadata = None
 
     return {
         "staging_id": staging_id,
         "files": extracted_files,
+        "dsk_metadata": dsk_metadata,
     }
 
 

@@ -1,8 +1,14 @@
-# retro_bbs Development Guidelines
+# Retro File BBS Development Guidelines
 
 ## Project Overview
-CP/M Software Depot BBS — a containerized telnet BBS serving CP/M software archives via Synchronet BBS.
+Retro File BBS — a containerized telnet BBS serving retro software archives (currently CP/M).
 See `sped.md` for the full technical spec.
+
+## Deployment
+- **Local dev:** `docker compose up --build`
+- **Production (NAS/Portainer):** `docker-compose.prod.yml` with GHCR image `ghcr.io/pmcfadin/retro-file-bbs`
+- **CI:** GitHub Actions builds and pushes to GHCR on merge to `main`
+- **Config:** env vars in `.env` (see `.env.example`)
 
 ## Active Technologies
 - Synchronet BBS (Docker: `bbsio/synchronet:3.19c`) — handles telnet, ANSI menus, file areas, ZMODEM, HTTP/FTP

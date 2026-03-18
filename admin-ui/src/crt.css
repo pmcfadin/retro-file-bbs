@@ -275,6 +275,30 @@ body.crt-scanlines::after {
   gap: 8px;
 }
 
+/* Disk image preview */
+.dsk-preview {
+  border: 1px solid var(--border);
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--bg);
+}
+
+.dsk-preview-header {
+  color: var(--amber);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.dsk-preview pre {
+  max-height: 200px;
+  overflow-y: auto;
+  color: var(--green);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Upload zone */
 .drop-zone {
   border: 2px dashed var(--border);
