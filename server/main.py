@@ -983,6 +983,8 @@ async def main_async(db_path: str, cpm_root: str, port: int, web_port: int) -> N
     # --- Configure FastAPI ---
     admin_api.DB_PATH = db_path
     admin_api.CPM_ROOT = cpm_root
+    admin_api.TELNET_PORT = port
+    admin_api.WEB_PORT = web_port
 
     # Install log handler for WebSocket broadcast
     ws_handler = admin_api.WebSocketLogHandler()
@@ -1016,7 +1018,7 @@ async def main_async(db_path: str, cpm_root: str, port: int, web_port: int) -> N
         connect_maxwait=5.0,
     )
 
-    log.info("CP/M Software Depot telnet listening on port %d", port)
+    log.info("Retro File BBS telnet listening on port %d", port)
 
     stop_event = asyncio.Event()
 

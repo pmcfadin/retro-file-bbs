@@ -43,6 +43,14 @@ export interface ConnectionEntry {
   event: string;
 }
 
+export interface ServerConfig {
+  version: string;
+  telnet_port: number;
+  web_port: number;
+  cpm_root: string;
+  db_path: string;
+}
+
 export interface IndexerStatusResponse {
   running: boolean;
   last_run: string | null;
@@ -79,6 +87,13 @@ async function fetchJSON<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  getConfig: () => fetchJSON<ServerConfig>(`${BASE}/config`),
+  patchConfig: (data: Partial<Pick<ServerConfig, "version" | "telnet_port" | "web_port" | "cpm_root" | "db_path">>) =>
+    fetchJSON<{ status: string; updated: Record<string, unknown> }>(`${BASE}/config`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }),
   getCategories: () => fetchJSON<Category[]>(`${BASE}/categories`),
 
   getFiles: (params: { area?: string; search?: string; page?: number; per_page?: number }) => {

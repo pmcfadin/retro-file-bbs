@@ -19,6 +19,8 @@ Thumbs.db
 
 # Test artifacts
 .tmp/
+test-results/
+admin-ui/test-results/
 
 # External references
 subprojects/

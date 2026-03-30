@@ -29,6 +29,9 @@ log = logging.getLogger(__name__)
 
 DB_PATH: str = ""
 CPM_ROOT: str = ""
+TELNET_PORT: int = 2323
+WEB_PORT: int = 8080
+VERSION: str = "Retro File BBS v1.0"
 
 _wal_initialized = False
 
@@ -132,6 +135,14 @@ async def _stream_subprocess(cmd: list[str], subscribers: list[asyncio.Queue]) -
 # ---------------------------------------------------------------------------
 
 
+class ConfigPatch(BaseModel):
+    version: str | None = None
+    telnet_port: int | None = None
+    web_port: int | None = None
+    cpm_root: str | None = None
+    db_path: str | None = None
+
+
 class FilePatch(BaseModel):
     description: str | None = None
     area: str | None = None
@@ -147,7 +158,42 @@ class ExtractCommit(BaseModel):
 # FastAPI app
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="CP/M Software Depot Admin", docs_url="/api/docs")
+app = FastAPI(title="Retro File BBS Admin", docs_url="/api/docs")
+
+
+@app.get("/api/config")
+def api_config():
+    return {
+        "version": VERSION,
+        "telnet_port": TELNET_PORT,
+        "web_port": WEB_PORT,
+        "cpm_root": CPM_ROOT,
+        "db_path": DB_PATH,
+    }
+
+
+@app.patch("/api/config")
+def api_config_patch(patch: ConfigPatch):
+    global VERSION, TELNET_PORT, WEB_PORT, CPM_ROOT, DB_PATH
+    changes = {}
+    if patch.version is not None:
+        VERSION = patch.version
+        changes["version"] = VERSION
+    if patch.telnet_port is not None:
+        TELNET_PORT = patch.telnet_port
+        changes["telnet_port"] = TELNET_PORT
+    if patch.web_port is not None:
+        WEB_PORT = patch.web_port
+        changes["web_port"] = WEB_PORT
+    if patch.cpm_root is not None:
+        CPM_ROOT = patch.cpm_root
+        changes["cpm_root"] = CPM_ROOT
+    if patch.db_path is not None:
+        DB_PATH = patch.db_path
+        changes["db_path"] = DB_PATH
+    if not changes:
+        raise HTTPException(400, "No fields to update")
+    return {"status": "ok", "updated": changes}
 
 
 # --- Categories ---
