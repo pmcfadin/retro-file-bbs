@@ -1,18 +1,46 @@
+![Retro File BBS](docs/readme_banner.png)
+
 # Retro File BBS
 
-A telnet BBS serving a curated CP/M software archive. Browse categories, search files, and download via ZMODEM — all from an ANSI terminal.
+A containerized telnet BBS serving a curated CP/M software archive, with a web admin UI for file management, uploads, monitoring, and settings.
 
-```
-telnet localhost 2323
-```
+## Getting Started
 
-## Quickstart
+### Option A: Pull and run
+
+No git clone needed — just Docker:
 
 ```bash
+docker pull ghcr.io/pmcfadin/retro-file-bbs:latest
+docker run -p 2323:2323 -p 8080:8080 -v /path/to/your/cpm:/data/cpm:ro ghcr.io/pmcfadin/retro-file-bbs:latest
+```
+
+### Option B: Clone and build
+
+```bash
+git clone https://github.com/pmcfadin/retro-file-bbs.git
+cd retro-file-bbs
 docker compose up --build
 ```
 
-Connect with any telnet client. Use [SyncTERM](https://syncterm.bbsdev.net/) for the full ANSI + ZMODEM experience.
+### Option C: Production deploy (NAS / Portainer)
+
+```bash
+cp .env.example .env
+# edit .env with your paths and ports
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Then connect: **telnet on :2323**, **admin UI at http://localhost:8080**.
+
+Use [SyncTERM](https://syncterm.bbsdev.net/) for the full ANSI + ZMODEM experience.
+
+## Services
+
+| Port | Service |
+|------|---------|
+| 2323 | Telnet BBS — ANSI menus, file browsing, ZMODEM downloads |
+| 8080 | Admin Web UI — file management, uploads, monitoring, settings |
 
 ## What's Inside
 
@@ -35,12 +63,19 @@ Connect with any telnet client. Use [SyncTERM](https://syncterm.bbsdev.net/) for
 
 Software sourced from [retroarchive.org](http://www.retroarchive.org/cpm/), the [Walnut Creek CP/M CD-ROM](https://archive.org/details/cdrom-1994-11-walnutcreek-cpm), [IF Archive](https://ifarchive.org/indexes/if-archive/games/cpm/), [cpm.z80.de](http://www.cpm.z80.de/), and [zimmers.net](https://www.zimmers.net/anonftp/pub/cpm/).
 
-## Services
+## Admin Web UI
 
-| Port | Service |
-|------|---------|
-| 2323 | Telnet BBS — ANSI menus, file browsing, ZMODEM downloads |
-| 8080 | HTTP mirror — browse and download files from a web browser |
+The web UI at port 8080 is a single-operator tool for managing the BBS file archive:
+
+| Page | What it does |
+|------|--------------|
+| **Files** | Browse, search, edit descriptions, move categories, delete files |
+| **Upload** | Add files or extract archives (ZIP/DSK/IMG) into the catalog |
+| **Monitor** | Live sessions, connection history, server logs |
+| **Indexer** | Run the scan/describe pipeline, view output |
+| **Settings** | Server config and display preferences |
+
+See [docs/Web_user_flows.md](docs/Web_user_flows.md) for detailed user flows.
 
 ## How It Works
 
@@ -81,12 +116,14 @@ docker compose restart cpmdepot
 
 The indexer picks up new files automatically. Supported archive formats for description extraction: `.ZIP`, `.LBR`, `.ARC`.
 
+You can also upload files directly through the **Upload** page in the admin web UI.
+
 ## Architecture
 
 ```
 [Telnet Client]  --> :2323 --> Python telnet server --> SQLite --> cpm/ (read-only)
-[Web Browser]    --> :8080 --> Python http.server   ------------> cpm/ (read-only)
-[CP/M Emulator]  --> z80pack + Kermit --> AUX bridge --> :2323 --> (same telnet server)
+[Web Browser]    --> :8080 --> FastAPI + React SPA  --> SQLite --> cpm/ (read/write)
+[CP/M Emulator]  --> z80pack + Kermit --> AUX bridge --> :2323
 ```
 
 ## Development
@@ -102,22 +139,16 @@ ruff check indexer/ server/ emulation/
 # Test indexer locally
 python3 indexer/scan.py ./cpm /tmp/test.db
 python3 indexer/describe.py /tmp/test.db
+
+# Admin UI development
+cd admin-ui
+npm install
+npm run dev    # Vite dev server on :5173, proxies API to :8080
 ```
 
-## Deployment (NAS / Portainer)
+## CI/CD
 
-For production deployment on a NAS:
-
-```bash
-# Copy and edit the env file
-cp .env.example .env
-# Edit .env with your paths and ports
-
-# Deploy with the production compose file
-docker compose -f docker-compose.prod.yml up -d
-```
-
-The image is auto-built and pushed to `ghcr.io/pmcfadin/retro-file-bbs` on every push to `main`.
+GitHub Actions auto-builds and pushes `ghcr.io/pmcfadin/retro-file-bbs:latest` on every push to `main`.
 
 ## Recommended Clients
 
