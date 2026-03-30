@@ -1,0 +1,3 @@
+QA TEST FILE — Retro File BBS
+This file is used by automated Playwright tests.
+Do not remove. Created by /web-qa-runner.
